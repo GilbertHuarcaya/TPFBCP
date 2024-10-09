@@ -1,0 +1,10 @@
+﻿################################################################################
+# Este archivo .gitignore ha sido creado automáticamente por Microsoft(R) Visual Studio.
+################################################################################
+
+/.vs/TPFBCP
+/Debug
+/TPFBCP/Debug
+/x64/Debug
+/TPFBCP/x64/Debug/TPFBCP.tlog
+/TPFBCP/x64/Debug
