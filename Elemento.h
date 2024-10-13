@@ -23,4 +23,5 @@ public:
 	time_t getFechaCreacion();
 	void setFechaEdicion(time_t fechaEdicion);
 	time_t getFechaEdicion();
+
 };

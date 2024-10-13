@@ -108,7 +108,6 @@ public:
 	void save(T lista)
 	{
 		File<T, E>::escribir(lista->getNombreArchivo(), lista);
-		this->load<T, E>(lista);
 	}
 
 	template <class T, class E>
@@ -145,8 +144,6 @@ public:
 	}
 	
 	//Operaciones
-
-
 	Operacion* transferir(int id, string numeroCuentaBancariaOrigen, string cuentaDestino, double monto, Canal* canal, Sede* sede = nullptr) {
 		CuentaBancaria* cuentaBancariaOrigen = CuentaBancaria::buscarCuentaPorNumero(numeroCuentaBancariaOrigen);
 		if (cuentaBancariaOrigen == nullptr) {
@@ -251,9 +248,6 @@ public:
 	}
 
 	void ejecutarOperacion(Operacion* operacion) {
-		ListaDoble<CuentaBancaria*>* cuentas = new ListaDoble<CuentaBancaria*>();
-		File<ListaDoble<CuentaBancaria*>*, CuentaBancaria>::leer("Cuentas.csv", cuentas);
-
 		Nodo<CuentaBancaria*>* cuentaBancariaOrigen = cuentas->search(operacion->getIdCuentaBancariaOrigen());
 		Nodo<CuentaBancaria*>* cuentaBancariaDestino = cuentas->search(operacion->getIdCuentaBancariaDestino());
 		operacion->validarOperacion();
@@ -299,6 +293,10 @@ public:
 				operacion->setEstado(Rechazada);
 				cout << "Saldo insuficiente" << endl;
 			}
+		}
+
+		if (cuentaBancariaOrigen != nullptr) {
+
 		}
 	}
 

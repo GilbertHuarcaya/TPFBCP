@@ -11,10 +11,7 @@ void mostrarMenuCuentaBancaria(Bcp* bcp, Cliente* cliente, CuentaBancaria* cuent
 	string cuentaDestino;
 	string cuentaOrigen = cuenta->getNumeroCuenta();
 	Operacion* operacion = new Operacion();
-	CuentaBancaria* cuentaActualizada = cuenta;
 	do {
-		cliente = bcp->getClientes()->search(cliente->getId())->data;
-		cuentaActualizada = bcp->getCuentas()->search(cuenta->getId())->data;
 		cout << "------------------------------------" << endl; // "------------------------------------
 		cout << "Bienvenido " << cliente->getNombre() << " " << cliente->getApellido() << endl;
 		cout << "Menu Cuentas:" << endl;
@@ -30,7 +27,7 @@ void mostrarMenuCuentaBancaria(Bcp* bcp, Cliente* cliente, CuentaBancaria* cuent
 		switch (opcion) {
 		case 1:
 			cout << "Consultando saldo..." << endl;
-			cout << "Saldo: " << cuentaActualizada->getSaldo() << endl;
+			cout << "Saldo: " << cuenta->getSaldo() << endl;
 			break;
 		case 2:
 			cout << "Transferir..." << endl;
@@ -152,10 +149,12 @@ void mostrarMenuPrincipal(Bcp* bcp) {
 		switch (opcion) {
 		case 1:
 			cout << "Iniciando sesion..." << endl;
-			mostrarMenuCliente(bcp, bcp->getClientes()->search(12)->data);
+			cliente = bcp->getClientes()->search(12)->data;
+			mostrarMenuCliente(bcp, cliente);
 			break;
 		case 2:
 			cliente = new Cliente(bcp->getLastId(bcp->getClientes()), "Juan", "Perez", "Av. Los Alamos", "987654321", "d", "1234");
+			bcp->agregar(cliente, bcp->getClientes());
 			break;
 		case 3:
 			cout << "Saliendo..." << endl;
