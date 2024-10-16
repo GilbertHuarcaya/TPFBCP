@@ -114,7 +114,6 @@ public:
 	void save(T lista)
 	{
 		File<T, E>::escribir(lista->getNombreArchivo(), lista);
-		this->load<T, E>(lista);
 	}
 
 	template <class T, class E>
@@ -706,6 +705,7 @@ public:
 								gotoxy(40, 15); cout << "Nuevo Nombre: "; cin >> aux;
 								cliente->setNombre(aux);
 								this->save<ListaDoble<Cliente*>*, Cliente>(clientes);
+								this->load<ListaDoble<Cliente*>*, Cliente>(clientes);
 								gotoxy(40, 17); cout << "Nombre cambiado correctamente";
 								gotoxy(40, 18); system("pause");
 								Console::Clear();
@@ -717,6 +717,7 @@ public:
 								gotoxy(40, 15); cout << "Nuevo telefono: "; cin >> aux;
 								cliente->setApellido(aux);
 								this->save<ListaDoble<Cliente*>*, Cliente>(clientes);
+								this->load<ListaDoble<Cliente*>*, Cliente>(clientes);
 								gotoxy(40, 17); cout << "Apellido cambiado correctamente";
 								gotoxy(40, 18); system("pause");
 								Console::Clear();
@@ -728,6 +729,7 @@ public:
 								gotoxy(40, 15); cout << "Nuevo telefono: "; cin >> aux;
 								cliente->setTelefono(aux);
 								this->save<ListaDoble<Cliente*>*, Cliente>(clientes);
+								this->load<ListaDoble<Cliente*>*, Cliente>(clientes);
 								gotoxy(40, 17); cout << "Telefono cambiado correctamente";
 								gotoxy(40, 18); system("pause");
 								Console::Clear();
@@ -740,6 +742,7 @@ public:
 								gotoxy(40, 15); cout << "Nueva Direccion: "; getline(cin, aux);
 								cliente->setDireccion(aux);
 								this->save<ListaDoble<Cliente*>*, Cliente>(clientes);
+								this->load<ListaDoble<Cliente*>*, Cliente>(clientes);
 								gotoxy(40, 17); cout << "Direccion cambiada correctamente";
 								gotoxy(40, 18); system("pause");
 								Console::Clear();
@@ -751,6 +754,7 @@ public:
 								gotoxy(40, 15); cout << "Nuevo Email: "; cin >> aux;
 								cliente->setEmail(aux);
 								this->save<ListaDoble<Cliente*>*, Cliente>(clientes);
+								this->load<ListaDoble<Cliente*>*, Cliente>(clientes);
 								gotoxy(40, 17); cout << "Email cambiado correctamente";
 								gotoxy(40, 18); system("pause");
 								gotoxy(40, 15);
@@ -770,6 +774,7 @@ public:
 								}
 								cliente->setPassword(aux);
 								this->save<ListaDoble<Cliente*>*, Cliente>(clientes);
+								this->load<ListaDoble<Cliente*>*, Cliente>(clientes);
 								gotoxy(40, 17); cout << "Contrasenia cambiada correctamente";
 								gotoxy(40, 18); system("pause");
 								Console::Clear();
@@ -839,6 +844,8 @@ public:
 					CuentaBancaria* aux = new CuentaBancaria(this->cuentas->getLastId(), cliente->getId(), contrasenia, numero_cuenta, 0);
 					this->cuentas->push_back(aux);
 					cliente->agregarCuentaBancaria(aux);
+					this->save<ListaDoble<CuentaBancaria*>*, CuentaBancaria>(cuentas);
+					this->load<ListaDoble<CuentaBancaria*>*, CuentaBancaria>(cuentas);
 					Console::Clear();
 					LogoBCP(18, 1);
 					gotoxy(40, 12); cout << "Cuenta bancaria agregada correctamente";
@@ -915,6 +922,8 @@ public:
 							cliente->getCuentasBancarias()->remove(auxiliar);
 							this->cuentas->remove(auxiliar);
 							this->save<ListaDoble<CuentaBancaria*>*, CuentaBancaria>(cuentas);
+							this->load<ListaDoble<CuentaBancaria*>*, CuentaBancaria>(cuentas);
+							cliente->loadCuentasBancarias();
 							Console::Clear();
 							break;
 						}
@@ -968,6 +977,7 @@ public:
 				switch (op)
 				{
 				default:
+					break;
 				case 1:
 					gotoxy(x_selec, y_selec); cout << " ";
 					op++;
@@ -1099,6 +1109,7 @@ public:
 					} while (auxiliar.size() != 4);
 					CuentaB->setPassword(auxiliar);
 					this->save<ListaDoble<CuentaBancaria*>*, CuentaBancaria>(cuentas);
+					this->load<ListaDoble<CuentaBancaria*>*, CuentaBancaria>(cuentas);
 					Console::Clear();
 					LogoBCP(18, 1);
 					gotoxy(40, 14); cout << "Contrasenia cambiada correctamente";
@@ -1130,6 +1141,8 @@ public:
 						this->tarjetas->push_back(auxiliar);
 						CuentaB->setTarjeta(auxiliar);
 						this->save<ListaDoble<Tarjeta*>*, Tarjeta>(tarjetas);
+						this->load<ListaDoble<Tarjeta*>*, Tarjeta>(tarjetas);
+						CuentaB->loadTarjeta();
 						gotoxy(40, 12); cout << "Tarjeta aniadida correctamente";
 						gotoxy(40, 13); system("pause");
 					}
@@ -1146,6 +1159,8 @@ public:
 						this->tarjetas->remove(auxiliar);
 						CuentaB->setTarjeta(nullptr);
 						this->save<ListaDoble<Tarjeta*>*, Tarjeta>(tarjetas);
+						this->load<ListaDoble<Tarjeta*>*, Tarjeta>(tarjetas);
+						CuentaB->loadTarjeta();
 						gotoxy(40, 12); cout << "La tarjeta ha sido removida correctamente";
 						system("pause");
 						break;
