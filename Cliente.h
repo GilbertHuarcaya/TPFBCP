@@ -31,6 +31,12 @@ public:
 	string getTelefono();
 	string getEmail();
 	string getPassword();
+	void setNombre(string nombre);
+	void setApellido(string apellido);
+	void setDireccion(string direccion);
+	void setTelefono(string telefono);
+	void setEmail(string email);
+	void setPassword(string password);
 
 	void agregarCuentaBancaria(CuentaBancaria* cuentaBancaria);
 	ListaDoble<CuentaBancaria*>* getCuentasBancarias();
@@ -72,26 +78,27 @@ Cliente::Cliente(int id, string nombre, string apellido, string direccion, strin
 string Cliente::getNombre() {
 	return nombre;
 }
-
 string Cliente::getApellido() {
 	return apellido;
 }
-
 string Cliente::getDireccion() {
 	return direccion;
 }
-
 string Cliente::getTelefono() {
 	return telefono;
 }
-
 string Cliente::getEmail() {
 	return email;
 }
-
 string Cliente::getPassword() {
 	return password;
 }
+void Cliente::setNombre(string nombre) { this->nombre = nombre; }
+void Cliente::setApellido(string apellido) { this->apellido = apellido; }
+void Cliente::setDireccion(string direccion) { this->direccion = direccion; }
+void Cliente::setTelefono(string telefono) { this->telefono = telefono; }
+void Cliente::setEmail(string email) { this->email = email; }
+void Cliente::setPassword(string password) { this->password = password; }
 
 void Cliente::agregarCuentaBancaria(CuentaBancaria* cuentaBancaria) {
 	cuentasBancarias->push_back(cuentaBancaria);

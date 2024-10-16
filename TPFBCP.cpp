@@ -165,14 +165,12 @@ void mostrarMenuPrincipal(Bcp* bcp) {
 	} while (opcion != 3);
 }
 
-
 int main()
 {
 	Bcp* bcp = new Bcp();
 
-
-	mostrarMenuPrincipal(bcp);
-
+	bcp->MenuBCP();
+	//mostrarMenuPrincipal(bcp);
 	/*
 	//canales
 	Canal* cajero = new Canal(bcp->getLastId(bcp->getCanales()), "Cajero", "", "", "", "", CAJERO);

@@ -205,6 +205,8 @@ inline CuentaBancaria* CuentaBancaria::buscarCuentaPorNumero(string numeroCuenta
 
 void CuentaBancaria::loadTarjeta()
 {
+	//Bool para verificar si se encontro la tarjeta de la cuenta bancaria
+	bool encontrado = false;
 	ListaDoble<Tarjeta*>* todasLasTarjetas = new ListaDoble<Tarjeta*>("Tarjetas.csv");
 	File<ListaDoble<Tarjeta*>*, Tarjeta>::leer("Tarjetas.csv", todasLasTarjetas);
 	Nodo<Tarjeta*>* temp = todasLasTarjetas->head;
@@ -213,9 +215,13 @@ void CuentaBancaria::loadTarjeta()
 		if (temp->data->getIdCuentaBancaria() == id)
 		{
 			tarjeta = temp->data;
+			//Pasa a true si lo encuentra
+			encontrado = true;
 		}
 		temp = temp->next;
 	}
+	//Si no lo encuentra, tarjeta sera null
+	if (!encontrado) tarjeta = nullptr;
 }
 
 void CuentaBancaria::loadOperaciones()
