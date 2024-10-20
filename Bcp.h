@@ -9,6 +9,7 @@
 #include "Sede.h"
 #include "Canal.h"
 #include "Cola.h"
+#include "HashTabla.h"
 
 using namespace std;
 using namespace System;
@@ -27,6 +28,7 @@ private:
 	ListaDoble<CuentaBancaria*>* cuentas;
 	ListaDoble<Tarjeta*>* tarjetas;
 	ListaDoble<Operacion*>* operaciones;
+	HashTabla<Cliente*>* hashClientes;
 	ListaDoble<Canal*>* canales;
 	Cola<Operacion*>* colaOperaciones;
 	ListaDoble<Sede*>* sedes;
@@ -42,7 +44,7 @@ public:
 		canales = new ListaDoble<Canal*>("Canales.csv");
 		colaOperaciones = new Cola<Operacion*>("ColaOperaciones.csv");
 		sedes = new ListaDoble<Sede*>("Sedes.csv");
-
+		hashClientes = new HashTabla<Cliente*>();
 		loadAll();
 	}
 	string getNombre() { return nombre; }
@@ -130,6 +132,12 @@ public:
 		load<ListaDoble<Operacion*>*, Operacion>(operaciones);
 		load<ListaDoble<Canal*>*, Canal>(canales);
 		load<ListaDoble<Sede*>*, Sede>(sedes);
+	}
+
+	template <class HT, class E>
+	void saveHash(HT hash)
+	{
+		File<HT, E>::escribirHash("hashTabla.csv", hash);
 	}
 
 	//Cuentas
@@ -402,6 +410,9 @@ public:
 						break;
 					}
 					Console::Clear();
+					if (ClienteEncontrado->data->getEmail() == "admin@bcp.pe") {
+						//AGREGAR MENU DE ADMINISTRACION / GESTION DE TODAS LAS TABLAS/LISTAS
+					}
 					MenuSoloCliente(ClienteEncontrado->data);
 					break;
 				}
@@ -468,8 +479,11 @@ public:
 						gotoxy(45, 12); cout << "                                             ";
 					}
 					} while (repetido);
-					this->clientes->push_back(new Cliente(this->getLastId(clientes), nombre, apellido, direccion, telefono, email, password));
+					Cliente* cliente = new Cliente(this->getLastId(clientes), nombre, apellido, direccion, telefono, email, password);
+					this->clientes->push_back(cliente);
 					this->save<ListaDoble<Cliente*>*, Cliente>(clientes);
+					this->hashClientes->insertar(cliente->getId(), cliente);
+					this->saveHash<HashTabla<Cliente*>*, Cliente>(hashClientes);
 					gotoxy(45, 12); cout << LBLUE << "Cuenta Registrada Correctamente"<<RESET;
 					gotoxy(45, 14); cout << RED << system("pause")<<RESET;
 					Console::Clear();
