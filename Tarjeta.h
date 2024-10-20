@@ -10,7 +10,6 @@ private:
 	string numero;
 	time_t fechaVencimiento;
 	string cvv;
-
 public:
 	Tarjeta() : Elemento() {
 		id = 0;
