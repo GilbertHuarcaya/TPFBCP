@@ -3,7 +3,7 @@
 #include "ListaDoble.h"
 #include "Operacion.h"
 #include "Tarjeta.h"
-#include <sstream>
+#include "sstream"
 #include "File.h"
 using namespace std;
 
@@ -36,20 +36,31 @@ public:
 	void setTarjeta(Tarjeta* tarjeta);
 	void setOperaciones(ListaDoble<Operacion*>* operaciones);
 
-	string escribirLinea();
-	void leerLinea(string File);
-
+	//UPDATE
 	void agregarOperacion(Operacion* operacion);
 	void retirar(double cantidad);
 	void depositar(double cantidad);
 	void transferir(CuentaBancaria* cuenta, double cantidad);
-	void imprimirOperaciones();
-	void print();
 
+	//SEARCH
 	static CuentaBancaria* buscarCuentaPorNumero(string numeroCuenta);
 
+	//LOAD TO LIST
 	void loadTarjeta();
 	void loadOperaciones();
+
+	//OPERACIONES
+	Operacion* crearDeposito(int id, string numeroCuentaBancaria, double monto, int idCanal, int idSede);
+	Operacion* crearTransferencia(int id, string numeroCuentaBancariaOrigen, string cuentaDestino, double monto, int idCanal, int idSede);
+	Operacion* crearRetiro(int id, string numeroCuentaBancaria, double monto, int idCanal, int idSede);
+
+	//FILE
+	string escribirLinea();
+	void leerLinea(string File);
+
+	//PRINT
+	void print();
+	void imprimirOperaciones();
 };
 
 
@@ -237,4 +248,52 @@ void CuentaBancaria::loadOperaciones()
 		}
 		temp = temp->next;
 	}
+}
+
+inline Operacion* CuentaBancaria::crearDeposito(int id, string numeroCuentaBancaria, double monto, int idCanal, int idSede)
+{
+	CuentaBancaria* cuentaBancaria = buscarCuentaPorNumero(numeroCuentaBancaria);
+	if (cuentaBancaria == nullptr) {
+		cout << "Cuenta no encontrada, intenta escribir sin espacios ni guiones entre los digitos." << endl;
+		return nullptr;
+	}
+
+	return new Operacion(id, 0, cuentaBancaria->getIdCliente(), 0, cuentaBancaria->getId(), Deposito, monto, idCanal, idSede);
+}
+
+
+Operacion* CuentaBancaria::crearTransferencia(int id, string numeroCuentaBancariaOrigen, string cuentaDestino, double monto, int idCanal, int idSede) {
+	CuentaBancaria* cuentaBancariaOrigen = buscarCuentaPorNumero(numeroCuentaBancariaOrigen);
+	if (cuentaBancariaOrigen == nullptr) {
+		cout << "Cuenta origen no encontrada, intenta escribir sin espacios ni guiones entre los digitos." << endl;
+		return nullptr;
+	}
+
+	CuentaBancaria* cuentaBancariaDestino = buscarCuentaPorNumero(cuentaDestino);
+	if (cuentaBancariaDestino == nullptr) {
+		cout << "Cuenta destino no encontrada, intenta escribir sin espacios ni guiones entre los digitos." << endl;
+		return nullptr;
+	}
+
+	if (monto > cuentaBancariaOrigen->getSaldo()) {
+		cout << "Saldo insuficiente" << endl;
+		return nullptr;
+	}
+
+	return new Operacion(id, cuentaBancariaOrigen->getIdCliente(), cuentaBancariaDestino->getIdCliente(), cuentaBancariaOrigen->getId(), cuentaBancariaDestino->getId(), Transferencia, monto, idCanal, idSede);
+}
+
+Operacion* CuentaBancaria::crearRetiro(int id, string numeroCuentaBancaria, double monto, int idCanal, int idSede) {
+	CuentaBancaria* cuentaBancaria = buscarCuentaPorNumero(numeroCuentaBancaria);
+	if (cuentaBancaria == nullptr) {
+		cout << "Cuenta no encontrada, intenta escribir sin espacios ni guiones entre los digitos." << endl;
+		return nullptr;
+	}
+
+	if (monto > cuentaBancaria->getSaldo()) {
+		cout << "Saldo insuficiente" << endl;
+		return nullptr;
+	}
+
+	return new Operacion(id, cuentaBancaria->getIdCliente(), 0, cuentaBancaria->getId(), 0, Retiro, monto, idCanal, idSede);
 }

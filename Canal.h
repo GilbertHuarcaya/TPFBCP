@@ -1,7 +1,7 @@
 #pragma once
-#include <string>
-#include <sstream>
 #include "Elemento.h"
+#include "string"
+#include "sstream"
 using namespace std;
 
 enum EstadoCanal {
@@ -22,80 +22,75 @@ enum ETipoDeCanal {
 class Canal : public Elemento
 {
 private:
+	int idSede = 0;
 	string nombre;
-	string direccion;
-	string ciudad;
-	string distrito;
-	string departamento;
 	EstadoCanal estado = CANAL_INACTIVO;
 	ETipoDeCanal tipoDeCanal;
+
 public:
 	Canal();
-	Canal(int id, string nombre, string direccion, string ciudad, string distrito, string departamento, ETipoDeCanal tipoDeCanal);
-	Canal(int id, string nombre, string direccion, string ciudad, string distrito, string departamento, int tipoDeCanal);
-	Canal(int id, ETipoDeCanal tipoDeCanal);
+	Canal(int id, string nombre, ETipoDeCanal tipoDeCanal, int idSede = 0);
+	Canal(int id, string nombre, int tipoDeCanal, int idSede = 0);
+	Canal(int id, ETipoDeCanal tipoDeCanal, int idSede = 0);
 	~Canal();
-	void print();
+
+	// GETTERS
 	string getNombre();
-	string getDireccion();
-	string getCiudad();
-	string getDistrito();
-	string getDepartamento();
 	ETipoDeCanal getTipoDeCanal();
 	EstadoCanal getEstado();
-	bool isActivo();
+	int getIdSede();
+
+	// SETTERS
 	void setNombre(string nombre);
-	void setDireccion(string direccion);
-	void setCiudad(string ciudad);
-	void setDistrito(string distrito);
-	void setDepartamento(string departamento);
+	void setIdSede(int idSede);
 	void setTipoDeCanal(ETipoDeCanal tipoDeCanal);
 	void setActivo(bool activo);
 
+	//UPDATE
+	void activar();
+	void desactivar();
+
+	// STATES
+	bool isActivo();
+
+	// SEARCH
+
+	// FILE
 	void leerLinea(string linea) override;
 	string escribirLinea() override;
 
+	// PRINT
+	void print();
 };
 
 Canal::Canal() : Elemento()
 {
 	nombre = "";
-	direccion = "";
-	ciudad = "";
-	distrito = "";
-	departamento = "";
 	estado = CANAL_INACTIVO;
 	tipoDeCanal = OTROCANAL;
 }
 
-Canal::Canal(int id, string nombre, string direccion, string ciudad, string distrito, string departamento, ETipoDeCanal tipoDeCanal) : Elemento(id)
+inline Canal::Canal(int id, string nombre, ETipoDeCanal tipoDeCanal, int idSede)
 {
+	this->id = id;
 	this->nombre = nombre;
-	this->direccion = direccion;
-	this->ciudad = ciudad;
-	this->distrito = distrito;
-	this->departamento = departamento;
 	this->tipoDeCanal = tipoDeCanal;
+	this->idSede = idSede;
 }
 
-Canal::Canal(int id, string nombre, string direccion, string ciudad, string distrito, string departamento, int tipoDeCanal) : Elemento(id)
+inline Canal::Canal(int id, string nombre, int tipoDeCanal, int idSede)
 {
+	this->id = id;
 	this->nombre = nombre;
-	this->direccion = direccion;
-	this->ciudad = ciudad;
-	this->distrito = distrito;
-	this->departamento = departamento;
 	this->tipoDeCanal = ETipoDeCanal(tipoDeCanal);
+	this->idSede = idSede;
 }
 
-Canal::Canal(int id, ETipoDeCanal tipoDeCanal) : Elemento(id)
+inline Canal::Canal(int id, ETipoDeCanal tipoDeCanal, int idSede)
 {
-	this->nombre = "";
-	this->direccion = "";
-	this->ciudad = "";
-	this->distrito = "";
-	this->departamento = "";
+	this->id = id;
 	this->tipoDeCanal = tipoDeCanal;
+	this->idSede = idSede;
 }
 
 Canal::~Canal()
@@ -107,37 +102,6 @@ string Canal::getNombre()
 	return nombre;
 }
 
-void Canal::print()
-{
-	cout << "ID:" << endl;
-	cout << "Nombre: " << nombre << endl;
-	cout << "Direccion: " << direccion << endl;
-	cout << "Ciudad: " << ciudad << endl;
-	cout << "Distrito: " << distrito << endl;
-	cout << "Departamento: " << departamento << endl;
-	cout << "Tipo de Canal: " << tipoDeCanal << endl;
-	cout << "Estado: " << estado << endl;
-}
-
-string Canal::getDireccion()
-{
-	return direccion;
-}
-
-string Canal::getCiudad()
-{
-	return ciudad;
-}
-
-string Canal::getDistrito()
-{
-	return distrito;
-}
-
-string Canal::getDepartamento()
-{
-	return departamento;
-}
 
 ETipoDeCanal Canal::getTipoDeCanal()
 {
@@ -147,6 +111,11 @@ ETipoDeCanal Canal::getTipoDeCanal()
 inline EstadoCanal Canal::getEstado()
 {
 	return estado;
+}
+
+inline int Canal::getIdSede()
+{
+	return idSede;
 }
 
 bool Canal::isActivo()
@@ -159,24 +128,9 @@ void Canal::setNombre(string nombre)
 	this->nombre = nombre;
 }
 
-void Canal::setDireccion(string direccion)
+inline void Canal::setIdSede(int idSede)
 {
-	this->direccion = direccion;
-}
-
-void Canal::setCiudad(string ciudad)
-{
-	this->ciudad = ciudad;
-}
-
-void Canal::setDistrito(string distrito)
-{
-	this->distrito = distrito;
-}
-
-void Canal::setDepartamento(string departamento)
-{
-	this->departamento = departamento;
+	this->idSede = idSede;
 }
 
 void Canal::setTipoDeCanal(ETipoDeCanal tipoDeCanal)
@@ -189,29 +143,50 @@ inline void Canal::setActivo(bool activo)
 	estado = activo ? CANAL_ACTIVO : CANAL_INACTIVO;
 }
 
+inline void Canal::activar()
+{
+	estado = CANAL_ACTIVO;
+}
+
+inline void Canal::desactivar()
+{
+	estado = CANAL_INACTIVO;
+}
 
 void Canal::leerLinea(string linea)
 {
 	stringstream ss(linea);
-	string id;
-	getline(ss, id, ',');
-	setId(stoi(id));
-	getline(ss, nombre, ',');
-	getline(ss, direccion, ',');
-	getline(ss, ciudad, ',');
-	getline(ss, distrito, ',');
-	getline(ss, departamento, ',');
-	string tipoDeCanal;
-	getline(ss, tipoDeCanal, ',');
-	setTipoDeCanal(ETipoDeCanal(stoi(tipoDeCanal)));
-	string estado;
-	getline(ss, estado, ',');
-	setActivo(stoi(estado));
+	string item;
+	getline(ss, item, ',');
+	if (item != "" || item != "id") {
+		id = stoi(item);
+		getline(ss, item, ',');
+		if (item != "") {
+			idSede = stoi(item);
+		}
+		getline(ss, nombre, ',');
+		getline(ss, item, ',');
+		tipoDeCanal = ETipoDeCanal(stoi(item));
+		getline(ss, item, ',');
+		estado = EstadoCanal(stoi(item));
+	}
 }
 
 string Canal::escribirLinea()
 {
 	stringstream ss;
-	ss << getId() << "," << nombre << "," << direccion << "," << ciudad << "," << distrito << "," << departamento << "," << tipoDeCanal << "," << estado;
+	ss << getId() << "," << idSede << "," << nombre << "," << tipoDeCanal << "," << estado;
 	return ss.str();
+}
+
+void Canal::print()
+{
+	cout << "ID:" << endl;
+	if (idSede != 0) {
+		cout << "ID Sede: " << idSede << endl;
+	}
+	cout << "Nombre: " << nombre << endl;
+	cout << "Tipo de Canal: " << tipoDeCanal << endl;
+	cout << "Estado: " << estado << endl;
+
 }

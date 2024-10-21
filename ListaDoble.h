@@ -157,6 +157,10 @@ public:
 		}
 		size--;
 	}
+	void update(T data)
+	{
+		search(data->getId())->data = data;
+	}
 	void clear()
 	{
 		while (head != nullptr)
@@ -201,9 +205,40 @@ public:
 		}
 		return nullptr;
 	}
+	/*
+	Se usa solo para buscar por valores que se sepan que son unicos
+	*/
+	template <typename C>
+	Nodo<T>* searchByValue(C callback) {
+		Nodo<T>* temp = head;
+		while (temp != nullptr)
+		{
+			if (callback(temp->data))
+			{
+				return temp;
+			}
+			temp = temp->next;
+		}
+		return nullptr;
+	}
 	Nodo<T>* getPrevious(Nodo<T>* nodo)
 	{
 		return nodo->prev;
+	}
+	Nodo<T>* getByPosition(int position)
+	{
+		Nodo<T>* temp = head;
+		int i = 0;
+		while (temp != nullptr)
+		{
+			if (i == position)
+			{
+				return temp;
+			}
+			temp = temp->next;
+			i++;
+		}
+		return nullptr;
 	}
 	Nodo<T>* getNext(Nodo<T>* nodo)
 	{

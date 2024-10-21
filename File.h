@@ -34,6 +34,24 @@ public:
 		return lista;
 	}
 
+	static void recargar(string path, L lista) {
+		ifstream file(path);
+		string line;
+		while (getline(file, line)) {
+			T* item = new T();
+			item->leerLinea(line);
+			if (item->getId() != 0) {
+				if (lista->search(item->getId()) != nullptr) {
+					lista->update(item);
+				}
+				else {
+					lista->push_back(item);
+				}
+
+			}
+		}
+	}
+
 	static void agregar(string path, T* item) {
 		ofstream file(path, ios::app);
 		file << item->escribirLinea() << "\n";
