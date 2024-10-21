@@ -205,6 +205,9 @@ public:
 		}
 		return nullptr;
 	}
+	/*
+	Se usa solo para buscar por valores que se sepan que son unicos
+	*/
 	template <typename C>
 	Nodo<T>* searchByValue(C callback) {
 		Nodo<T>* temp = head;
