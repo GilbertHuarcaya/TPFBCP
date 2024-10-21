@@ -538,7 +538,6 @@ void Bcp::MenuBCP()
 
 void Bcp::MenuSoloCliente(Cliente* cliente)
 {
-
 	vector<string> opciones = { 
 		"Ver mis Datos", 
 		"Modificar uno de mis datos", 
@@ -725,13 +724,14 @@ void Bcp::MenuSoloCliente(Cliente* cliente)
 			auto callback1 = [&](int opcion) {
 
 				if (cuentasDelCliente->head != nullptr) {
-					MenuSoloCuentaBancaria(cuentasDelCliente->getByPosition(opcion)->data);
-					return true;
+					MenuSoloCuentaBancaria(cuentas->search(cuentasDelCliente->getByPosition(opcion)->data->getId())->data);
+					return false;
 				}
 		
 				return false;
 				};
 			crearMenu(misCuentas, callback1);
+
 			break;
 		}
 		case 5:
@@ -797,10 +797,9 @@ void Bcp::MenuSoloCliente(Cliente* cliente)
 
 void Bcp::MenuSoloCuentaBancaria(CuentaBancaria* CuentaB)
 {
-
 	vector<string> opciones = { "Ver los Datos de la Cuenta", "Cambiar contrasenia", "Ver las operaciones de la cuenta", "Agregar una Tarjeta a la cuenta", "Eliminar la Tarjeta de la cuenta", "Renovar Tarjeta", "Hacer una operacion", "Ver Cola de operaciones", "Salir" };
 
-	auto callback = [this, &CuentaB](int opcion) {
+	auto callback = [&](int opcion) {
 		switch (opcion)
 		{
 		case 0:
