@@ -157,6 +157,10 @@ public:
 		}
 		size--;
 	}
+	void update(T data)
+	{
+		search(data->getId())->data = data;
+	}
 	void clear()
 	{
 		while (head != nullptr)
@@ -194,6 +198,19 @@ public:
 		while (temp != nullptr)
 		{
 			if (temp->data == data)
+			{
+				return temp;
+			}
+			temp = temp->next;
+		}
+		return nullptr;
+	}
+	template <typename C>
+	Nodo<T>* searchByValue(C callback) {
+		Nodo<T>* temp = head;
+		while (temp != nullptr)
+		{
+			if (callback(temp->data))
 			{
 				return temp;
 			}

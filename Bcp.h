@@ -82,7 +82,12 @@ public:
 	template <class T, class E>
 	void load(T lista);
 
+	template<class T, class E>
+	void reload(T lista);
+
 	void loadAll();
+
+	void reloadAll();
 
 	template <class HT, class E>
 	void saveHash(HT hash);
@@ -101,6 +106,8 @@ public:
 
 	void MenuBCP();
 
+	//MENU CLIENTE
+
 	void MenuSoloCliente(Cliente* cliente);
 
 	void MenuSoloCuentaBancaria(CuentaBancaria* CuentaB);
@@ -111,25 +118,23 @@ public:
 
 	void MenuOperacionPorCanal(Canal* canal, CuentaBancaria* cuenta);
 
-	void MenuOperacionPorCliente(Cliente* cliente);
-
-	void MenuOperacionPorCuentaBancaria(CuentaBancaria* cuenta);
-
-	void MenuOperacionPorTarjeta(Tarjeta* tarjeta);
+	
+	//MENU ADMINISTRADOR
 
 	void MenuAdmin();
+
+	//GESTION
+	void MenuSedes();
+
+	void MenuCanales();
+
+	void MenuClientes();
 
 	void MenuOperaciones();
 
 	void MenuCuentas();
 
 	void MenuTarjetas();
-
-	void MenuSedes();
-
-	void MenuCanales();
-
-	void MenuClientes();
 
 
 };
@@ -232,6 +237,12 @@ void Bcp::load(T lista)
 	File<T, E>::leer(lista->getNombreArchivo(), lista);
 }
 
+template <class T, class E>
+void Bcp::reload(T lista)
+{
+	File<T, E>::recargar(lista->getNombreArchivo(), lista);
+}
+
 void Bcp::loadAll()
 {
 	load<ListaDoble<Cliente*>*, Cliente>(clientes);
@@ -241,6 +252,17 @@ void Bcp::loadAll()
 	load<ListaDoble<Canal*>*, Canal>(canales);
 	load<ListaDoble<Sede*>*, Sede>(sedes);
 }
+
+void Bcp::reloadAll()
+{
+	reload<ListaDoble<Cliente*>*, Cliente>(clientes);
+	reload<ListaDoble<CuentaBancaria*>*, CuentaBancaria>(cuentas);
+	reload<ListaDoble<Tarjeta*>*, Tarjeta>(tarjetas);
+	reload<ListaDoble<Operacion*>*, Operacion>(operaciones);
+	reload<ListaDoble<Canal*>*, Canal>(canales);
+	reload<ListaDoble<Sede*>*, Sede>(sedes);
+}
+
 
 template <class HT, class E>
 void Bcp::saveHash(HT hash)
@@ -328,9 +350,11 @@ void Bcp::ejecutarOperacion(Operacion* operacion) {
 		}
 	}
 
-	if (cuentaBancariaOrigen != nullptr) {
-
-	}
+	//recargar cuentas bancarias de los clientes
+	if (cuentaBancariaOrigen != nullptr)
+		buscarPorId<ListaDoble<Cliente*>*, Cliente>(cuentaBancariaOrigen->data->getIdCliente(), clientes)->data->loadCuentasBancarias();
+	if (cuentaBancariaDestino != nullptr)
+		buscarPorId<ListaDoble<Cliente*>*, Cliente>(cuentaBancariaDestino->data->getIdCliente(), clientes)->data->loadCuentasBancarias();
 }
 
 //Menu y relacionados
@@ -521,9 +545,33 @@ void Bcp::MenuBCP()
 void Bcp::MenuSoloCliente(Cliente* cliente)
 {
 
-	vector<string> opciones = { "Ver mis Datos", "Modificar uno de mis datos", "Ver mis Cuentas Bancarias", "Agregar una Cuenta Bancaria Random", "Acceder a mi Cuenta Bancaria", "Eliminar una de mis Cuentas Bancarias", "Salir" };
+	vector<string> opciones = { 
+		"Ver mis Datos", 
+		"Modificar uno de mis datos", 
+		"Ver mis Cuentas Bancarias", 
+		"Agregar una Cuenta Bancaria Random", 
+		"Acceder a mi Cuenta Bancaria", 
+		"Eliminar una de mis Cuentas Bancarias", 
+		"Salir" };
 
-	auto callback = [this, cliente](int opcion, bool salir) {
+	vector<string> misCuentas;
+
+	ListaDoble<CuentaBancaria*>* cuentasDelCliente = cliente->getCuentasBancarias();
+
+	Nodo<CuentaBancaria*>* temp = cuentasDelCliente->head;
+	while (temp != nullptr)
+	{
+		misCuentas.push_back(temp->data->getNumeroCuenta() + ", " + "SALDO: " + to_string(temp->data->getSaldo()));
+		temp = temp->next;
+	}
+
+	auto callback1 = [this, cliente, misCuentas, cuentasDelCliente](int opcion, bool salir) {
+
+		MenuSoloCuentaBancaria(cuentasDelCliente->getByPosition(opcion)->data);
+		};
+
+
+	auto callback = [this, cliente, misCuentas, callback1](int opcion, bool salir) {
 		switch (opcion)
 		{
 		case 0:
@@ -790,6 +838,10 @@ void Bcp::MenuSoloCliente(Cliente* cliente)
 		}
 		case 4:
 		{
+
+			crearMenu(misCuentas, callback1);
+			break;
+			/*
 			Console::Clear();
 			LogoBCP(18, 1);
 			int id_aux;
@@ -801,7 +853,7 @@ void Bcp::MenuSoloCliente(Cliente* cliente)
 				{
 					cout << "\nIngrese el numero de id de la cuenta que desee acceder: ";
 					cin >> id_aux;
-					Nodo<CuentaBancaria*>* aux = cliente->getCuentasBancarias()->search(id_aux);
+					Nodo<CuentaBancaria*>* aux =  ;//cliente->getCuentasBancarias()->search(id_aux);
 					if (aux == nullptr)
 					{
 						cout << "\nNo se encontro la cuenta bancaria ingresada\n";
@@ -820,6 +872,7 @@ void Bcp::MenuSoloCliente(Cliente* cliente)
 			gotoxy(40, 14); cout << LBLUE << "Usted no tiene ninguna cuenta bancaria a su nombre" << RESET;
 			gotoxy(40, 16); system("pause");
 			break;
+			*/
 		}
 		case 5:
 		{
@@ -886,7 +939,7 @@ void Bcp::MenuSoloCuentaBancaria(CuentaBancaria* CuentaB)
 
 	vector<string> opciones = { "Ver los Datos de la Cuenta", "Cambiar contrasenia", "Ver las operaciones de la cuenta", "Agregar una Tarjeta a la cuenta", "Eliminar la Tarjeta de la cuenta", "Renovar Tarjeta", "Hacer una operacion", "Ver Cola de operaciones", "Salir" };
 
-	auto callback = [this, CuentaB](int opcion, bool salir) {
+	auto callback = [this, &CuentaB](int opcion, bool salir) {
 		switch (opcion)
 		{
 		case 0:
@@ -1029,10 +1082,11 @@ inline void Bcp::MenuElegirCanalOSede(CuentaBancaria* cuenta)
 	{
 		opcionesSedes.push_back(sedesDisponibles->getByPosition(i)->data->getNombre());
 	}
-	auto callback = [sedesDisponibles, cuenta, this](int seleccion, bool salir) {
+	auto callback = [sedesDisponibles, &cuenta, this](int seleccion, bool salir) {
 		Nodo<Sede*>* sede = sedesDisponibles->getByPosition(seleccion);
 		if (sede != nullptr)
 			MenuOperacionPorSede(sede->data, cuenta);
+		salir = true;
 		};
 
 
@@ -1044,10 +1098,11 @@ inline void Bcp::MenuElegirCanalOSede(CuentaBancaria* cuenta)
 		opcionesCanales.push_back(canalesSinSedeDisponibles->getByPosition(i)->data->getNombre());
 	}
 
-	auto callback1 = [canalesSinSedeDisponibles, cuenta, this](int seleccion, bool salir) {
+	auto callback1 = [canalesSinSedeDisponibles, &cuenta, this](int seleccion, bool salir) {
 		Nodo<Canal*>* canal = canalesSinSedeDisponibles->getByPosition(seleccion);
-		if (canal != nullptr)
+		if (canal != nullptr) 
 			MenuOperacionPorCanal(canal->data, cuenta);
+		salir = true;
 		};
 
 	vector<string> opciones = {
@@ -1056,7 +1111,7 @@ inline void Bcp::MenuElegirCanalOSede(CuentaBancaria* cuenta)
 		"Salir"
 	};
 
-	auto callback2 = [opcionesSedes, opcionesCanales, callback, callback1, this](int seleccion, bool salir) {
+	auto callback2 = [&opcionesSedes, &opcionesCanales, &callback, &callback1, this](int seleccion, bool salir) {
 		switch (seleccion) {
 		case 0:
 			crearMenu(opcionesSedes, callback);
@@ -1098,14 +1153,14 @@ inline void Bcp::MenuOperacionPorSede(Sede* sede, CuentaBancaria* cuenta)
 		opcionesCajeros.push_back(cajeros->getByPosition(i)->data->getNombre());
 	}
 
-	auto callback1 = [cuenta, ventanillas, this](int seleccion1, bool salir) {
+	auto callback1 = [&cuenta, ventanillas, this](int seleccion1, bool salir) {
 		Nodo<Canal*>* canal = ventanillas->getByPosition(seleccion1);
 		if (canal != nullptr)
 			MenuOperacionPorCanal(canal->data, cuenta);
 		salir = true;
 		};
 
-	auto callback2 = [cuenta, cajeros, this](int seleccion2, bool salir) {
+	auto callback2 = [&cuenta, cajeros, this](int seleccion2, bool salir) {
 		Nodo<Canal*>* canal = cajeros->getByPosition(seleccion2);
 		if (canal != nullptr)
 			MenuOperacionPorCanal(canal->data, cuenta);
@@ -1167,6 +1222,7 @@ inline void Bcp::MenuOperacionPorCanal(Canal* canal, CuentaBancaria* cuenta)
 
 			operacion = cuenta->crearTransferencia(getLastId(colaOperaciones), cuentaOrigen, cuentaDestino, monto, canal->getId(), canal->getIdSede());
 			if (operacion != nullptr) colaOperaciones->encolar(operacion);
+
 			system("pause");
 			break;
 		case 2:
@@ -1210,7 +1266,17 @@ inline void Bcp::MenuOperacionPorCanal(Canal* canal, CuentaBancaria* cuenta)
 			salir = true;
 			break;
 		};
+
+		//desencolar luego de cada encolamiento
+		Operacion* opDesencolada = colaOperaciones->desencolar();
+		if (opDesencolada != nullptr) {
+			ejecutarOperacion(opDesencolada);
+			opDesencolada->setId(getLastId(operaciones));
+			agregar(opDesencolada, operaciones);
+		}
 	};
+
+	crearMenu(opciones, callback);
 }
 
 void Bcp::MenuCanales()
@@ -1235,6 +1301,7 @@ void Bcp::MenuCanales()
 		switch (seleccion) {
 		case 0:
 			canales->print();
+			system("pause");
 			break;
 		case 1:
 			cout << "Ingrese el tipo: ";
@@ -1308,6 +1375,7 @@ void Bcp::MenuSedes()
 		switch (seleccion) {
 		case 0:
 			sedes->print();
+			system("pause");
 			break;
 		case 1:
 			cout << "Ingrese la ciudad: ";
@@ -1364,13 +1432,13 @@ void Bcp::crearMenu(const vector<string>& opciones, T callback) {
 	bool salir = false;
 
 	do {
-		system("cls");
-		LogoBCP(0, 0);
+		Console::Clear();
+		LogoBCP(18, 1);
 
-		int screenWidth = 80; // Ancho de la pantalla (puedes ajustar esto según sea necesario)
-		int screenHeight = 25; // Alto de la pantalla (puedes ajustar esto según sea necesario)
+		int screenWidth = 120; // Ancho de la pantalla (puedes ajustar esto según sea necesario)
+		int screenHeight = 70; // Alto de la pantalla (puedes ajustar esto según sea necesario)
 		int menuHeight = opciones.size();
-		int startY = (screenHeight - menuHeight) / 2;
+		int startY = 10;
 
 		for (size_t i = 0; i < opciones.size(); ++i) {
 			int startX = (screenWidth - opciones[i].length() - 4) / 2; // -4 para "> " y " <"
@@ -1392,9 +1460,12 @@ void Bcp::crearMenu(const vector<string>& opciones, T callback) {
 		case 80: // Flecha abajo
 			seleccion = (seleccion + 1) % opciones.size();
 			break;
+		case 27: // Esc
+			salir = true;
+			break;
 		case 13: // Enter
 			callback(seleccion, salir);
 			break;
 		}
-	} while (tecla != 27 && salir == false); // Esc para salir o si continuar es false
+	} while (salir == false); // Esc para salir o si continuar es false
 }

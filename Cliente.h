@@ -163,9 +163,14 @@ void Cliente::loadCuentasBancarias() {
 	Nodo<CuentaBancaria*>* temp = todasLasCuentas->head;
 	while (temp != nullptr) {
 		if (temp->data->getIdCliente() == id) {
-			cuentasBancarias->push_back(temp->data);
+			if (cuentasBancarias->getSize() != 0) {
+				cuentasBancarias->update(temp->data);
+			}
+			else {
+				cuentasBancarias->push_back(temp->data);
+			}
 		}
 		temp = temp->next;
 	}
-
+	
 }
