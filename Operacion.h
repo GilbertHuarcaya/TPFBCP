@@ -1,9 +1,8 @@
 #pragma once
 #include "Elemento.h"
-#include "Canal.h"
-#include "Sede.h"
 #include "ListaDoble.h"
-#include <string>
+#include "string"
+#include "sstream"
 using namespace std;
 
 enum TipoOperacion {
@@ -29,16 +28,16 @@ private:
 	TipoOperacion tipo;
 	EstadoOperacion estado;
 	double monto;
-	Canal* canal;
-	Sede* sede;
+	int idCanal;
+	int idSede;
 public:
 	Operacion();
 	Operacion(int id, int idClienteOrigen,
 		int idClienteDestino, int idCuentaBancariaOrigen,
-		int idCuentaBancariaDestino, int tipo, double monto, Canal* canal, Sede* sede);
+		int idCuentaBancariaDestino, int tipo, double monto, int idCanal, int idSede);
 	Operacion(int id, int idClienteOrigen,
 		int idClienteDestino, int idCuentaBancariaOrigen,
-		int idCuentaBancariaDestino, TipoOperacion tipo, double monto, Canal* canal, Sede* sede);
+		int idCuentaBancariaDestino, TipoOperacion tipo, double monto, int idCanal, int idSede);
 	~Operacion();
 
 	int getIdClienteOrigen();
@@ -47,13 +46,20 @@ public:
 	int getIdCuentaBancariaDestino();
 	TipoOperacion getTipo();
 	double getMonto();
-	Canal* getCanal();
-	Sede* getSede();
+	int getIdCanal();
+	int getIdSede();
 	EstadoOperacion getEstado();
-	void setEstado(EstadoOperacion estado) { this->estado = estado; }
+
+	void setEstado(EstadoOperacion estado);
+
+	//FILE
 	string escribirLinea();
 	void leerLinea(string linea);
+
+	//PRINT
 	void print();
+
+	//VALIDATORS
 	void validarOperacion();
 };
 
@@ -66,36 +72,34 @@ Operacion::Operacion() : Elemento() {
 	tipo = Ninguno;
 	estado = Pendiente;
 	monto = 0;
-	canal = nullptr;
-	sede = nullptr;
+	idCanal = 0;
+	idSede = 0;
 }
 Operacion::Operacion(int id, int idClienteOrigen,
 	int idClienteDestino, int idCuentaBancariaOrigen,
-	int idCuentaBancariaDestino, int tipo, double monto, Canal* canal, Sede* sede = nullptr)
+	int idCuentaBancariaDestino, int tipo, double monto, int idCanal, int idSede = 0)
 	: Elemento(id), idClienteOrigen(idClienteOrigen),
 	idClienteDestino(idClienteDestino),
 	idCuentaBancariaOrigen(idCuentaBancariaOrigen),
 	idCuentaBancariaDestino(idCuentaBancariaDestino), monto(monto) {
 	tipo = TipoOperacion(tipo);
-	this->canal = canal;
-	this->sede = sede;
+	this->idCanal = idCanal;
+	this->idSede = idSede;
 	estado = Pendiente;
 }
 Operacion::Operacion(int id, int idClienteOrigen,
 	int idClienteDestino, int idCuentaBancariaOrigen,
-	int idCuentaBancariaDestino, TipoOperacion tipo, double monto, Canal* canal, Sede* sede = nullptr)
+	int idCuentaBancariaDestino, TipoOperacion tipo, double monto, int idCanal, int idSede = 0)
 	: Elemento(id), idClienteOrigen(idClienteOrigen),
 	idClienteDestino(idClienteDestino),
 	idCuentaBancariaOrigen(idCuentaBancariaOrigen),
-	idCuentaBancariaDestino(idCuentaBancariaDestino),
-	tipo(tipo), monto(monto) {
-	this->canal = canal;
-	this->sede = sede;
+	idCuentaBancariaDestino(idCuentaBancariaDestino), monto(monto) {
+	this->tipo = tipo;
+	this->idCanal = idCanal;
+	this->idSede = idSede;
 	estado = Pendiente;
 }
 Operacion::~Operacion() {
-	delete canal;
-	delete sede;
 }
 
 int Operacion::getIdClienteOrigen() { return idClienteOrigen; }
@@ -104,13 +108,18 @@ int Operacion::getIdCuentaBancariaOrigen() { return idCuentaBancariaOrigen; }
 int Operacion::getIdCuentaBancariaDestino() { return idCuentaBancariaDestino; }
 TipoOperacion Operacion::getTipo() { return tipo; }
 double Operacion::getMonto() { return monto; }
-Canal* Operacion::getCanal() { return canal; }
-Sede* Operacion::getSede() { return sede; }
+int Operacion::getIdCanal() { return idCanal; }
+int Operacion::getIdSede() { return idSede; }
 EstadoOperacion Operacion::getEstado() { return estado; }
+
+inline void Operacion::setEstado(EstadoOperacion estado)
+{
+	this->estado = estado;
+}
 
 string Operacion::escribirLinea() {
 	stringstream ss;
-	ss << id << "," << idClienteOrigen << "," << idClienteDestino << "," << idCuentaBancariaOrigen << "," << idCuentaBancariaDestino << "," << tipo << "," << estado << "," << monto << "," << fechaCreacion << "," << fechaEdicion;
+	ss << id << "," << idClienteOrigen << "," << idClienteDestino << "," << idCuentaBancariaOrigen << "," << idCuentaBancariaDestino << "," << tipo << "," << estado << "," << monto << "," << idCanal << "," << idSede << "," << fechaCreacion << "," << fechaEdicion;
 	return ss.str();
 }
 
@@ -135,6 +144,10 @@ void Operacion::leerLinea(string linea) {
 		getline(ss, item, ',');
 		monto = stod(item);
 		getline(ss, item, ',');
+		idCanal = stoi(item);
+		getline(ss, item, ',');
+		idSede = stoi(item);
+		getline(ss, item, ',');
 		fechaCreacion = stoll(item);
 		getline(ss, item, ',');
 		fechaEdicion = stoll(item);
@@ -150,8 +163,10 @@ void Operacion::print() {
 	cout << "Tipo: " << TipoOperacion(tipo) << endl;
 	cout << "Estado: " << EstadoOperacion(estado) << endl;
 	cout << "Monto: " << monto << endl;
-	cout << "Fecha creacion: " << put_time(localtime(&fechaCreacion), "%Y-%m-%d-%h-%m") << endl;
-	cout << "Fecha edicion: " << put_time(localtime(&fechaEdicion), "%Y-%m-%d-%h-%m") << endl;
+	if (idCanal != 0 ) cout << "IdCanal: " << idCanal << endl;
+	if (idSede != 0)  cout << "IdSede: " << idSede << endl;
+	cout << "Fecha creacion: " << put_time(localtime(&fechaCreacion), "%Y-%m-%d") << endl;
+	cout << "Fecha edicion: " << put_time(localtime(&fechaEdicion), "%Y-%m-%d") << endl;
 }
 
 void Operacion::validarOperacion() {

@@ -205,6 +205,21 @@ public:
 	{
 		return nodo->prev;
 	}
+	Nodo<T>* getByPosition(int position)
+	{
+		Nodo<T>* temp = head;
+		int i = 0;
+		while (temp != nullptr)
+		{
+			if (i == position)
+			{
+				return temp;
+			}
+			temp = temp->next;
+			i++;
+		}
+		return nullptr;
+	}
 	Nodo<T>* getNext(Nodo<T>* nodo)
 	{
 		return nodo->next;
