@@ -126,6 +126,7 @@
     <ResourceCompile Include="app.rc" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ArbolBinario.h" />
     <ClInclude Include="Bcp.h" />
     <ClInclude Include="Canal.h" />
     <ClInclude Include="Cliente.h" />
@@ -137,6 +138,7 @@
     <ClInclude Include="HashTabla.h" />
     <ClInclude Include="ListaDoble.h" />
     <ClInclude Include="Nodo.h" />
+    <ClInclude Include="NodoArbol.h" />
     <ClInclude Include="Operacion.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Resource.h" />

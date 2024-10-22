@@ -101,36 +101,40 @@ public:
 		for (int i = 0; i < hashTabla->size(); i++)
 		{
 			if (hashTabla->getByPos(i) != nullptr) {
-				file << to_string(hashTabla->getByPos(i)->getKey()) + "," + hashTabla->getByPos(i)->getValue()->escribirLinea() + "\n";
-			}
-			else {
-				file << "\n";
+				file << to_string(hashTabla->getByPos(i)->getKey()) << "," << hashTabla->getByPos(i)->getValue()->escribirLinea() << "\n";
 			}
 		}
 		file.close();
 	}
-	/*
-	static L leer(string path, L lista) {
+
+	static L leerHash(string path, L hashTabla) {
 		ifstream file(path);
 		string line;
+		string aux;
 		while (getline(file, line)) {
-			T* item = new T();
-			item->leerLinea(line);
-			if (item->getId() != 0) {
-				lista->push_back(item);
+			if (line != "")
+			{
+				T* item = new T();
+				aux = line.substr(0, line.find(",") - 1);
+				int key = stoi(aux);
+				line = line.substr(line.find(",") + 1);
+				item->leerLinea(line);
+				if (item->getId() != 0) {
+					hashTabla->insertar(key, item);
+				}
 			}
 		}
 		file.close();
-		return lista;
+		return hashTabla;
 	}
 
-	static void agregar(string path, T* item) {
+	static void agregarHash(string path, T* item, int key) {
 		ofstream file(path, ios::app);
-		file << item->escribirLinea() << "\n";
+		file << to_string(key) << "," << item->escribirLinea() << "\n";
 		file.close();
 	}
 
-	static void editar(string path, T* item) {
+	static void editarHash(string path, T* item, int key) {
 		ifstream file(path);
 		ofstream temp("temp.txt");
 		string line;
@@ -138,7 +142,7 @@ public:
 			T* tempItem = new T();
 			tempItem->leerLinea(line);
 			if (tempItem->getId() == item->getId()) {
-				temp << item->escribirLinea() << "\n";
+				temp << to_string(key) << "," << item->escribirLinea() << "\n";
 			}
 			else {
 				temp << line << "\n";
@@ -150,12 +154,13 @@ public:
 		rename("temp.txt", path.c_str());
 	}
 
-	static void eliminar(string path, T* item) {
+	static void eliminarHash(string path, T* item) {
 		ifstream file(path);
 		ofstream temp("temp.txt");
 		string line;
 		while (getline(file, line)) {
 			T* tempItem = new T();
+			line = line.substr(line.find(',') + 1);
 			tempItem->leerLinea(line);
 			if (tempItem->getId() != item->getId()) {
 				temp << line << "\n";
@@ -166,5 +171,4 @@ public:
 		remove(path.c_str());
 		rename("temp.txt", path.c_str());
 	}
-	*/
 };

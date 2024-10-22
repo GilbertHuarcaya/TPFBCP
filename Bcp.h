@@ -45,7 +45,7 @@ public:
 		canales = new ListaDoble<Canal*>("Canales.csv");
 		colaOperaciones = new Cola<Operacion*>("ColaOperaciones.csv");
 		sedes = new ListaDoble<Sede*>("Sedes.csv");
-		hashClientes = new HashTabla<Cliente*>();
+		hashClientes = new HashTabla<Cliente*>("hashTabla.csv");
 		loadAll();
 	}
 
@@ -97,6 +97,9 @@ public:
 
 	template <class HT, class E>
 	void saveHash(HT hash);
+
+	template<class HT, class E>
+	void loadHash(HT hash);
 
 	template<typename T>
 	void crearMenu(const vector<string>& opciones, T callback);
@@ -273,6 +276,7 @@ void Bcp::loadAll()
 	load<ListaDoble<Operacion*>*, Operacion>(operaciones);
 	load<ListaDoble<Canal*>*, Canal>(canales);
 	load<ListaDoble<Sede*>*, Sede>(sedes);
+	
 }
 
 void Bcp::reloadAll()
@@ -285,12 +289,19 @@ void Bcp::reloadAll()
 	reload<ListaDoble<Sede*>*, Sede>(sedes);
 }
 
-
+//Archivos para hash
 template <class HT, class E>
 void Bcp::saveHash(HT hash)
 {
-	File<HT, E>::escribirHash("hashTabla.csv", hash);
+	File<HT, E>::escribirHash(hash->getNombreArchivo(), hash);
 }
+
+template <class HT, class E>
+void Bcp::loadHash(HT hash)
+{
+	File<HT, E>::leerHash(hash->getNombreArchivo(), hash);
+}
+
 
 //Cuentas
 

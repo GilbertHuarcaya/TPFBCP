@@ -8,15 +8,17 @@ private:
 	HashEntidad<T>** tabla;
 	int numElementos;
 	int TABLE_SIZE;
+	string nombreArchivo;
 
 public:
-	HashTabla(int TABLE_SIZE = 128) {
+	HashTabla(string nombreArchivo, int TABLE_SIZE = 128) {
 		this->TABLE_SIZE = TABLE_SIZE;
 		tabla = new HashEntidad<T> *[TABLE_SIZE];
 		for (int i = 0; i < TABLE_SIZE; ++i) {
 			tabla[i] = nullptr;
 		}
 		numElementos = 0;
+		this->nombreArchivo = nombreArchivo;
 	}
 	~HashTabla()
 	{
@@ -101,6 +103,7 @@ public:
 		}
 		return tabla[id]->getValue();
 	}
+	string getNombreArchivo() { return nombreArchivo; }
 	void print() {
 		for (int i = 0; i < TABLE_SIZE; i++) {
 			if (tabla[i] != nullptr) {
