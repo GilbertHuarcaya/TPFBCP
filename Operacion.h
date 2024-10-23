@@ -48,6 +48,7 @@ public:
 	double getMonto();
 	int getIdCanal();
 	int getIdSede();
+
 	EstadoOperacion getEstado();
 
 	void setEstado(EstadoOperacion estado);
@@ -61,6 +62,10 @@ public:
 
 	//VALIDATORS
 	void validarOperacion();
+
+	//Ordenamiento avanzado
+	static void ordenarPorFecha(ListaDoble<Operacion*>* lista, bool ascendente);
+	static void ordenarPorMonto(ListaDoble<Operacion*>* lista, bool ascendente);
 };
 
 
@@ -110,6 +115,7 @@ TipoOperacion Operacion::getTipo() { return tipo; }
 double Operacion::getMonto() { return monto; }
 int Operacion::getIdCanal() { return idCanal; }
 int Operacion::getIdSede() { return idSede; }
+
 EstadoOperacion Operacion::getEstado() { return estado; }
 
 inline void Operacion::setEstado(EstadoOperacion estado)
@@ -180,5 +186,23 @@ void Operacion::validarOperacion() {
 		estado = Rechazada;
 		return;
 	}
+}
+
+inline void Operacion::ordenarPorFecha(ListaDoble<Operacion*>* lista, bool ascendente)
+{
+	auto compararFechas = [&](Operacion* a, Operacion* b) {
+		return ascendente ? a->getFechaCreacion() < b->getFechaCreacion() : a->getFechaCreacion() > b->getFechaCreacion();
+	};
+
+	lista->mergeSort(&lista->head, compararFechas);
+}
+
+void Operacion::ordenarPorMonto(ListaDoble<Operacion*>* lista, bool ascendente)
+{
+	auto compararMontos = [&](Operacion* a, Operacion* b) {
+		return ascendente ? a->getMonto() < b->getMonto() : a->getMonto() > b->getMonto();
+		};
+
+	lista->mergeSort(&lista->head, compararMontos);
 }
 

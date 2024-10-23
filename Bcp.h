@@ -144,7 +144,7 @@ public:
 
 	void MenuOperaciones();
 
-	void MenuCuentas();
+	void MenuCuentasBancarias();
 
 	void MenuTarjetas();
 
@@ -457,6 +457,9 @@ void Bcp::MenuBCP()
 			Console::Clear();
 			if (ClienteEncontrado->data->getEmail() == "admin@bcp.pe") {
 				//AGREGAR MENU DE ADMINISTRACION / GESTION DE TODAS LAS TABLAS/LISTAS
+				MenuAdmin();
+				return false;
+				break;
 			}
 			MenuSoloCliente(ClienteEncontrado->data);
 			encontrado = false;
@@ -1219,6 +1222,181 @@ void Bcp::MenuCanales()
 			buscarPorId<ListaDoble<Canal*>*, Canal>(id, canales)->data->desactivar();
 			break;
 		case 8:
+			return false;
+			break;
+		}
+		return true;
+		};
+
+	crearMenu(opciones, callback);
+}
+
+inline void Bcp::MenuClientes()
+{
+}
+
+inline void Bcp::MenuOperaciones()
+{
+	vector<string> opciones = {
+		"Listar todas las operaciones",
+		"Listar las operaciones por tipo",
+		"Listar las operaciones por estado",
+		"Ordenar por fecha",
+		"Ordenar por monto",
+		"Salir"
+	};
+
+	TipoOperacion tipo;
+	string cuenta;
+	string canal;
+	string sede;
+	string fecha;
+	double monto;
+	bool estado;
+
+	auto callback = [this, &tipo, &cuenta, &canal, &sede, &fecha, &monto, &estado](int seleccion) {
+		switch (seleccion) {
+		case 0:
+			operaciones->print();
+			system("pause");
+			break;
+		case 1:
+		{
+			cout << "Elija el tipo: ";
+
+			vector<string> tipos = { "Transferencia", "Deposito", "Retiro" };
+
+			auto callback = [&](int seleccion) {
+				switch (seleccion) {
+				case 0:
+					tipo = Transferencia;
+					break;
+				case 1:
+					tipo = Deposito;
+					break;
+				case 2:
+					tipo = Retiro;
+					break;
+				}
+				return false;
+				};
+
+			crearMenu(tipos, callback);
+
+			//callback paa buscar por valor
+
+			auto searchByValue = [this, &tipo](Operacion* op) {
+				return op->getTipo() == tipo;
+				};
+			ListaDoble<Operacion*>* temp = operaciones->searchMultipleByValue(searchByValue);
+			if (temp != nullptr) {
+				if(temp->head != nullptr) temp->printPaginaSoloIda(5);
+			}
+			else {
+				cout << "No se encontraron operaciones con ese tipo" << endl;
+			}
+			delete temp;
+			break;
+		}
+		case 2:
+		{
+			cout << "Elija el estado: ";
+
+			vector<string> estados = { "Pendiente", "Aprobado", "Rechazado" };
+
+			auto callback = [&](int seleccion) {
+				switch (seleccion) {
+				case 0:
+					estado = Pendiente;
+					break;
+				case 1:
+					estado = Realizada;
+					break;
+				case 2:
+					estado = Rechazada;
+					break;
+				}
+				return true;
+				};
+
+			crearMenu(estados, callback);
+
+			//callback paa buscar por valor
+
+			auto searchByValue = [this, &estado](Operacion* op) {
+				return op->getEstado() == estado;
+				};
+			ListaDoble<Operacion*>* temp = operaciones->searchMultipleByValue(searchByValue);
+			if (temp != nullptr) {
+				if (temp->head != nullptr) temp->printPaginaSoloIda(5);
+			} else {
+				cout << "No se encontraron operaciones con ese estado" << endl;
+			}
+			delete temp;
+
+			break;
+		}
+		case 3:
+			Operacion::ordenarPorFecha(operaciones, true);
+			operaciones->printPaginaSoloIda(5);
+			break;
+		case 4:
+			Operacion::ordenarPorMonto(operaciones, true);
+			operaciones->printPaginaSoloIda(5);
+			break;
+		case 5:
+			return false;
+			break;
+		}
+
+		return true;
+		};
+
+	crearMenu(opciones, callback);
+
+}
+
+inline void Bcp::MenuCuentasBancarias()
+{
+}
+
+inline void Bcp::MenuTarjetas()
+{
+}
+
+inline void Bcp::MenuAdmin()
+{
+	vector<string> opciones = {
+		"Clientes",
+		"Cuentas Bancarias",
+		"Tarjetas",
+		"Operaciones",
+		"Sedes",
+		"Canales",
+		"Salir"
+	};
+
+	auto callback = [&](int seleccion) {
+		switch (seleccion) {
+		case 0:
+			MenuClientes();
+			break;
+		case 1:
+			MenuCuentasBancarias();
+			break;
+		case 2:
+			MenuTarjetas();
+			break;
+		case 3:
+			MenuOperaciones();
+			break;
+		case 4:
+			MenuSedes();
+			break;
+		case 5:
+			MenuCanales();
+			break;
+		case 6:
 			return false;
 			break;
 		}
