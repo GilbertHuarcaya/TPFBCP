@@ -45,8 +45,20 @@ public:
 		canales = new ListaDoble<Canal*>("Canales.csv");
 		colaOperaciones = new Cola<Operacion*>("ColaOperaciones.csv");
 		sedes = new ListaDoble<Sede*>("Sedes.csv");
-		hashClientes = new HashTabla<Cliente*>("hashTabla.csv");
+		hashClientes = new HashTabla<Cliente*>("Datos/hashTabla.csv");
 		loadAll();
+	}
+
+	~Bcp()
+	{
+		delete clientes;
+		delete cuentas;
+		delete tarjetas;
+		delete operaciones;
+		delete canales;
+		delete colaOperaciones;
+		delete sedes;
+		delete hashClientes;
 	}
 
 	string getNombre();
@@ -136,6 +148,7 @@ public:
 	void MenuAdmin();
 
 	//GESTION
+
 	void MenuSedes();
 
 	void MenuCanales();
@@ -248,6 +261,7 @@ void Bcp::eliminar(E* item, T lista)
 template <class T>
 void Bcp::listar(T lista) {
 	lista->print();
+	system("pause");
 }
 
 template <class T, class E>
@@ -301,7 +315,6 @@ void Bcp::loadHash(HT hash)
 {
 	File<HT, E>::leerHash(hash->getNombreArchivo(), hash);
 }
-
 
 //Cuentas
 
@@ -712,7 +725,6 @@ void Bcp::MenuSoloCliente(Cliente* cliente)
 				}
 			} while (contrasenia.size() != 4);
 			CuentaBancaria* nuevaCuentaBancaria = new CuentaBancaria(this->cuentas->getLastId(), cliente->getId(), contrasenia, numero_cuenta, 0);
-			this->cuentas->push_back(nuevaCuentaBancaria);
 			cliente->agregarCuentaBancaria(nuevaCuentaBancaria);
 			agregar(nuevaCuentaBancaria, cuentas);
 			Console::Clear();
@@ -884,7 +896,6 @@ void Bcp::MenuSoloCuentaBancaria(CuentaBancaria* CuentaB)
 			else
 			{
 				Tarjeta* auxiliar = new Tarjeta(this->tarjetas->getLastId(), CuentaB->getIdCliente(), CuentaB->getId());
-				this->tarjetas->push_back(auxiliar);
 				CuentaB->setTarjeta(auxiliar);
 				agregar(auxiliar, tarjetas);
 				gotoxy(40, 12); cout << "Tarjeta aniadida correctamente";
@@ -918,7 +929,6 @@ void Bcp::MenuSoloCuentaBancaria(CuentaBancaria* CuentaB)
 			if (CuentaB->getTarjeta() != nullptr)
 			{
 				Tarjeta* auxiliar = new Tarjeta(this->tarjetas->getLastId(), CuentaB->getIdCliente(), CuentaB->getId());
-				this->tarjetas->push_back(auxiliar);
 				CuentaB->setTarjeta(auxiliar);
 				agregar(auxiliar, tarjetas);
 				gotoxy(40, 12); cout << "Tarjeta renovada correctamente";
@@ -936,6 +946,7 @@ void Bcp::MenuSoloCuentaBancaria(CuentaBancaria* CuentaB)
 			break;
 		case 7:
 			colaOperaciones->print();
+			system("pause");
 			break;
 		case 8:
 			Console::Clear();
@@ -1166,62 +1177,325 @@ void Bcp::MenuCanales()
 		"Eliminar un canal",
 		"Activar un canal",
 		"Desactivar un canal",
+		"Ordenar por nombre",
+		"Ordenar por estado",
 		"Salir"
 	};
 
-	string tipo;
-	string sede;
-	int id;
-
-	auto callback = [this, &tipo, &sede, &id](int seleccion) {
+	auto callback = [&](int seleccion) {
 		switch (seleccion) {
-		case 0:
-			canales->print();
-			system("pause");
+		case 0: //Listar todos los canales
+			canales->printPaginaSoloIda();
 			break;
-		case 1:
-			cout << "Ingrese el tipo: ";
+		case 1: //Listar los canales por tipo
+		{
+			ETipoDeCanal tipo;
+			Sede* sede;
+			cout << "Elija el tipo: ";
 
-			cin >> tipo;
-			//buscarPorTipo(canales, tipo)->print();
-			break;
-		case 2:
-			cout << "Ingrese la sede: ";
+			vector<string> tipos = { "Ventanilla", "Agente", "Web", "App", "Yape", "Cajero" };
 
-			cin >> sede;
-			//buscarPorSede(canales, sede)->print();
-			break;
-		case 3:
-			agregar<ListaDoble<Canal*>*, Canal>(new Canal(getLastId(canales), "Nuevo cajero", CAJERO, 1), canales); // CAJERO por defecto
-			agregar<ListaDoble<Canal*>*, Canal>(new Canal(getLastId(canales),"Web", WEB), canales);
-			agregar<ListaDoble<Canal*>*, Canal>(new Canal(getLastId(canales), "APP", APP), canales);
-			agregar<ListaDoble<Canal*>*, Canal>(new Canal(getLastId(canales), "YAPE", YAPE), canales);
-			break;
-		case 4:
-			cout << "Ingrese el id del canal a editar: ";
+			auto callback = [&](int seleccion) {
+				switch (seleccion) {
+				case 0:
+					tipo = VENTANILLA;
+					break;
+				case 1:
+					tipo = AGENTE;
+					break;
+				case 2:
+					tipo = WEB;
+					break;
+				case 3:
+					tipo = APP;
+					break;
+				case 4:
+					tipo = YAPE;
+					break;
+				case 5:
+					tipo = CAJERO;
+					break;
+				}
+				return false;
+				};
 
-			cin >> id;
-			editar<ListaDoble<Canal*>*, Canal>(buscarPorId<ListaDoble<Canal*>*, Canal>(id, canales)->data, canales);
-			break;
-		case 5:
-			cout << "Ingrese el id del canal a eliminar: ";
+			crearMenu(tipos, callback);
 
-			cin >> id;
-			eliminar<ListaDoble<Canal*>*, Canal>(buscarPorId<ListaDoble<Canal*>*, Canal>(id, canales)->data, canales);
-			break;
-		case 6:
-			cout << "Ingrese el id del canal a activar: ";
+			//callback paa buscar por valor
 
-			cin >> id;
-			buscarPorId<ListaDoble<Canal*>*, Canal>(id, canales)->data->activar();
+			auto searchByValue = [this, &tipo](Canal* canal) {
+				return canal->getTipoDeCanal() == tipo;
+				};
+			ListaDoble<Canal*>* temp = canales->searchMultipleByValue(searchByValue);
+			if (temp != nullptr) {
+				if (temp->head != nullptr) temp->printPaginaSoloIda(5);
+			}
+			else {
+				cout << "No se encontraron canales con ese tipo" << endl;
+				system("pause");
+			}
+			delete temp;
 			break;
-		case 7:
-			cout << "Ingrese el id del canal a desactivar: ";
+		}
+		case 2: //Listar los canales por sede
+		{
+			ETipoDeCanal tipo;
+			Sede* sede;
+			cout << "Elija la sede: ";
+			vector<string> opcionesSedes;
+			for (int i = 0; i < sedes->getSize(); i++)
+			{
+				opcionesSedes.push_back(sedes->getFormattedByPos([&](Sede* sede) { return to_string(sede->getId()) + sede->getNombre(); }, i));
+			}
+			auto callback = [&](int seleccion) {
+				Nodo<Sede*>* TempSede = sedes->getByPosition(seleccion);
+				if (TempSede != nullptr)
+					sede = TempSede->data;
+				return false;
+				};
+			crearMenu(opcionesSedes, callback);
 
-			cin >> id;
-			buscarPorId<ListaDoble<Canal*>*, Canal>(id, canales)->data->desactivar();
+			auto searchByValue = [this, &sede](Canal* canal) {
+				return canal->getIdSede() == sede->getId();
+				};
+			ListaDoble<Canal*>* temp = canales->searchMultipleByValue(searchByValue);
+			if (temp != nullptr) {
+				if (temp->head != nullptr) temp->printPaginaSoloIda(5);
+			}
+			else {
+				cout << "No se encontraron canales con esa sede" << endl;
+				system("pause");
+			}
+			delete temp;
 			break;
-		case 8:
+		}
+		case 3: //Agregar un canal
+		{
+			string nombre;
+			ETipoDeCanal tipo = OTROCANAL;
+			Sede* sede;
+
+			vector<string> campos = { "Nombre" };
+			auto callback = [&](vector<string> valores) {
+				nombre = valores[0];
+				return false;
+				};
+			crearFormulario(campos, callback);
+			
+			cout << "Elija el tipo: ";
+
+			vector<string> tipos = { "Ventanilla", "Agente", "Web", "App", "Yape", "Cajero" };
+
+			auto callback1 = [&](int seleccion) {
+				switch (seleccion) {
+				case 0:
+					tipo = VENTANILLA;
+					break;
+				case 1:
+					tipo = AGENTE;
+					break;
+				case 2:
+					tipo = WEB;
+					break;
+				case 3:
+					tipo = APP;
+					break;
+				case 4:
+					tipo = YAPE;
+					break;
+				case 5:
+					tipo = CAJERO;
+					break;
+				}
+				return false;
+				};
+
+			crearMenu(tipos, callback1);
+
+			if (tipo != VENTANILLA && tipo != CAJERO) {
+				cout << "Elija la sede: ";
+				vector<string> opcionesSedes;
+				for (int i = 0; i < sedes->getSize(); i++)
+				{
+					opcionesSedes.push_back(sedes->getFormattedByPos([&](Sede* sede) { return to_string(sede->getId()) + sede->getNombre(); }, i));
+				}
+				auto callback2 = [&](int seleccion) {
+					Nodo<Sede*>* TempSede = sedes->getByPosition(seleccion);
+					if (TempSede != nullptr)
+						sede = TempSede->data;
+					return false;
+					};
+				crearMenu(opcionesSedes, callback2);
+			}
+
+			agregar<ListaDoble<Canal*>*, Canal>(new Canal(getLastId(canales), nombre, tipo, sede != nullptr ? sede->getId() : 0), canales);
+			break;
+		}
+		case 4: //Editar un canal
+		{
+			string nombre;
+			ETipoDeCanal tipo = OTROCANAL;
+			Sede* sede;
+			vector<string> opcionesCanal;
+			for (int i = 0; i < canales->getSize(); i++)
+			{
+				opcionesCanal.push_back(canales->getFormattedByPos([&](Canal* sede) { return to_string(sede->getId()) + sede->getNombre(); }, i));
+			}
+			auto callback = [&](int seleccion) {
+				Nodo<Canal*>* canal = canales->getByPosition(seleccion);
+				if (canal != nullptr)
+				{
+					vector<string> campos = { "Nombre", "Tipo de Canal", "Sede", "Quitar de la sede"};
+					auto menuOpcionesEdditables = [&](int seleccion) {
+
+						switch (seleccion) {
+						case 0:
+						{
+							vector<string> campoEditable;
+							campoEditable.push_back(campos[seleccion]);
+							auto callback = [&](vector<string> valores) {
+								canal->data->setNombre(valores[0]);
+								return false;
+								};
+							crearFormulario(campoEditable, callback);
+							break;
+						}
+						case 1:
+						{
+							cout << "Elija el tipo: ";
+
+							vector<string> tipos = { "Ventanilla", "Agente", "Web", "App", "Yape", "Cajero" };
+
+							auto callback1 = [&](int seleccion) {
+								switch (seleccion) {
+								case 0:
+									canal->data->setTipoDeCanal(VENTANILLA);
+									break;
+								case 1:
+									canal->data->setTipoDeCanal(AGENTE);
+									break;
+								case 2:
+									canal->data->setTipoDeCanal(WEB);
+									break;
+								case 3:
+									canal->data->setTipoDeCanal(APP);
+									break;
+								case 4:
+									canal->data->setTipoDeCanal(YAPE);
+									break;
+								case 5:
+									canal->data->setTipoDeCanal(CAJERO);
+									break;
+								}
+								return false;
+								};
+
+							crearMenu(tipos, callback1);
+							break;
+						}
+						case 2:
+						{
+							if (tipo != VENTANILLA && tipo != CAJERO) {
+								cout << "Elija la sede: ";
+								vector<string> opcionesSedes;
+								for (int i = 0; i < sedes->getSize(); i++)
+								{
+									opcionesSedes.push_back(sedes->getFormattedByPos([&](Sede* sede) { return to_string(sede->getId()) + sede->getNombre(); }, i));
+								}
+								auto callback2 = [&](int seleccion) {
+									Nodo<Sede*>* TempSede = sedes->getByPosition(seleccion);
+									if (TempSede != nullptr)
+										canal->data->setIdSede(TempSede->data->getId());
+									return false;
+									};
+								crearMenu(opcionesSedes, callback2);
+							}
+							else {
+								cout << "Este canal no puede tener sede" << endl;
+								system("pause");
+							}
+							break;
+						}
+						case 3:
+							if (tipo != VENTANILLA && tipo != CAJERO) canal->data->setIdSede(0);
+							else {
+								cout << "Este canal no tiene sede" << endl;
+								system("pause");
+							}
+							break;
+						}
+						editar<ListaDoble<Canal*>*, Canal>(canal->data, canales);
+						cout << "Canal editado correctamente" << endl;
+						system("pause");
+
+
+						return false;
+						};
+					crearMenu(campos, menuOpcionesEdditables);
+
+				}
+				
+				return false;
+				};
+			crearMenu(opcionesCanal, callback);
+			break;
+		}
+		case 5: //Eliminar un canal
+		{
+			vector<string> opcionesCanal;
+			for (int i = 0; i < canales->getSize(); i++)
+			{
+				opcionesCanal.push_back(canales->getFormattedByPos([&](Canal* sede) { return to_string(sede->getId()) + sede->getNombre(); }, i));
+			}
+			auto callback = [&](int seleccion) {
+				Nodo<Canal*>* canal = canales->getByPosition(seleccion);
+				if (canal != nullptr)
+					eliminar<ListaDoble<Canal*>*, Canal>(canal->data, canales);
+				return false;
+				};
+			break;
+		}
+		case 6: //Activar un canal
+		{
+			vector<string> opcionesCanal;
+			for (int i = 0; i < canales->getSize(); i++)
+			{
+				opcionesCanal.push_back(canales->getFormattedByPos([&](Canal* sede) { return to_string(sede->getId()) + sede->getNombre(); }, i));
+			}
+			auto callback = [&](int seleccion) {
+				Nodo<Canal*>* canal = canales->getByPosition(seleccion);
+				if (canal != nullptr)
+					canal->data->activar();
+				return false;
+				};
+			crearMenu(opcionesCanal, callback);
+			break;
+		}
+		case 7: //Desactivar un canal
+		{
+			vector<string> opcionesCanal;
+			for (int i = 0; i < canales->getSize(); i++)
+			{
+				opcionesCanal.push_back(canales->getFormattedByPos([&](Canal* sede) { return to_string(sede->getId()) + sede->getNombre(); }, i));
+			}
+			auto callback = [&](int seleccion) {
+				Nodo<Canal*>* canal = canales->getByPosition(seleccion);
+				if (canal != nullptr)
+					canal->data->desactivar();
+				return false;
+				};
+			crearMenu(opcionesCanal, callback);
+			break;
+		}
+		case 8: //Ordenar por nombre
+			Canal::ordenarPorNombre<ListaDoble<Canal*>*>(canales, true);
+			canales->printPaginaSoloIda(5);
+			break;
+		case 9: //Ordenar por estado
+			Canal::ordenarPorEstado<ListaDoble<Canal*>*>(canales, true);
+			canales->printPaginaSoloIda(5);
+			break;
+		case 10:
 			return false;
 			break;
 		}
@@ -1252,7 +1526,7 @@ inline void Bcp::MenuOperaciones()
 	string sede;
 	string fecha;
 	double monto;
-	bool estado;
+	EstadoOperacion estado;
 
 	auto callback = [this, &tipo, &cuenta, &canal, &sede, &fecha, &monto, &estado](int seleccion) {
 		switch (seleccion) {
@@ -1316,7 +1590,7 @@ inline void Bcp::MenuOperaciones()
 					estado = Rechazada;
 					break;
 				}
-				return true;
+				return false;
 				};
 
 			crearMenu(estados, callback);
@@ -1337,11 +1611,11 @@ inline void Bcp::MenuOperaciones()
 			break;
 		}
 		case 3:
-			Operacion::ordenarPorFecha(operaciones, true);
+			Operacion::ordenarPorFecha<ListaDoble<Operacion*>*>(operaciones, true);
 			operaciones->printPaginaSoloIda(5);
 			break;
 		case 4:
-			Operacion::ordenarPorMonto(operaciones, true);
+			Operacion::ordenarPorMonto<ListaDoble<Operacion*>*>(operaciones, true);
 			operaciones->printPaginaSoloIda(5);
 			break;
 		case 5:
@@ -1417,6 +1691,7 @@ void Bcp::MenuSedes()
 		"Eliminar una sede",
 		"Activar una sede",
 		"Desactivar una sede",
+		"Ordenar por nombre",
 		"Salir"
 	};
 	string ciudad;
@@ -1426,49 +1701,143 @@ void Bcp::MenuSedes()
 	auto callback = [this, &ciudad, &departamento, &id](int seleccion) {
 		switch (seleccion) {
 		case 0:
-			sedes->print();
+			sedes->printPaginaSoloIda();
 			system("pause");
 			break;
 		case 1:
-			cout << "Ingrese la ciudad: ";
+			cout << "Ingrese nombre de la ciudad: ";
 	
 			cin >> ciudad;
-			//buscarPorCiudad(sedes, ciudad)->print();
+			sedes->searchMultipleByValue([ciudad](Sede* sede) { return sede->getCiudad() == ciudad; })->printPaginaSoloIda(10);
 			break;
 		case 2:
 			cout << "Ingrese el departamento: ";
 
 			cin >> departamento;
-			//buscarPorDepartamento(sedes, departamento)->print();
+			sedes->searchMultipleByValue([departamento](Sede* sede) { return sede->getDepartamento() == departamento; })->printPaginaSoloIda(10);
 			break;
 		case 3:
-			agregar<ListaDoble<Sede*>*, Sede>(new Sede(getLastId(sedes), "nueva sede","Calle las Amapolas", "lima", "Lince", "Lima", "99857463", "nuevaSede@email.com"), sedes);
+		{
+			vector<string> campos = { "Nombre", "Direccion", "Ciudad", "Distrito", "Departamento", "Telefono", "Email"};
+			auto callback = [this](vector<string> valores) {
+				agregar<ListaDoble<Sede*>*, Sede>(new Sede(getLastId(sedes), valores[0], valores[1], valores[2], valores[3], valores[4], valores[5], valores[6]), sedes);
+				return false;
+				};
+			crearFormulario(campos, callback);
 			break;
+		}
 		case 4:
-			cout << "Ingrese el id de la sede a editar: ";
-			
-			cin >> id;
-			editar<ListaDoble<Sede*>*, Sede>(buscarPorId<ListaDoble<Sede*>*, Sede>(id, sedes)->data, sedes);
+		{
+			vector<string> opcionesSedes;
+			for (int i = 0; i < sedes->getSize(); i++)
+			{
+				opcionesSedes.push_back(sedes->getFormattedByPos([&](Sede* sede) { return to_string(sede->getId()) + " - " + sede->getNombre(); }, i));
+			}
+			auto callback = [&](int seleccion) {
+				Nodo<Sede*>* sede = sedes->getByPosition(seleccion);
+				if (sede != nullptr)
+				{
+					vector<string> campos = { "Nombre", "Direccion", "Ciudad", "Distrito", "Departamento", "Telefono", "Email" };
+					auto menuOpcionesEdditables = [&](int seleccion) {
+						vector<string> campoEditable;
+						campoEditable.push_back(campos[seleccion]);
+						auto callback = [&](vector<string> valores) {
+							switch (seleccion) {
+							case 0:
+								sede->data->setNombre(valores[0]);
+								break;
+							case 1:
+								sede->data->setDireccion(valores[0]);
+								break;
+							case 2:
+								sede->data->setCiudad(valores[0]);
+								break;
+							case 3:
+								sede->data->setDistrito(valores[0]);
+								break;
+							case 4:
+								sede->data->setDepartamento(valores[0]);
+								break;
+							case 5:
+								sede->data->setTelefono(valores[0]);
+								break;
+							case 6:
+								sede->data->setEmail(valores[0]);
+								break;
+							}
+							editar<ListaDoble<Sede*>*, Sede>(sede->data, sedes);
+							cout << "Sede editada correctamente" << endl;
+							system("pause");
+							return false;
+							};
+						crearFormulario(campoEditable, callback);
+						return false;
+						};
+					crearMenu(campos, menuOpcionesEdditables);
+					
+				}
+				return false;
+				};
+			crearMenu(opcionesSedes, callback);
+
 			break;
+		}
 		case 5:
-			cout << "Ingrese el id de la sede a eliminar: ";
+		{
+			vector<string> opcionesSedes;
+			for (int i = 0; i < sedes->getSize(); i++)
+			{
+				opcionesSedes.push_back(sedes->getFormattedByPos([&](Sede* sede) { return to_string(sede->getId()) + sede->getNombre(); }, i));
+			}
+			auto callback = [&](int seleccion) {
+				Nodo<Sede*>* sede = sedes->getByPosition(seleccion);
+				if (sede != nullptr)
+					eliminar<ListaDoble<Sede*>*, Sede>(sede->data, sedes);
+				return false;
+				};
+			crearMenu(opcionesSedes, callback);
 
-			cin >> id;
-			eliminar<ListaDoble<Sede*>*, Sede>(buscarPorId<ListaDoble<Sede*>*, Sede>(id, sedes)->data, sedes);
 			break;
+		}
 		case 6:
-			cout << "Ingrese el id de la sede a activar: ";
+		{
+			vector<string> opcionesSedes;
+			for (int i = 0; i < sedes->getSize(); i++)
+			{
+				opcionesSedes.push_back(sedes->getFormattedByPos([&](Sede* sede) { return to_string(sede->getId()) + sede->getNombre(); }, i));
+			}
+			auto callback = [&](int seleccion) {
+				Nodo<Sede*>* sede = sedes->getByPosition(seleccion);
+				if (sede != nullptr)
+					sede->data->activar();
+				return false;
+				};
+			crearMenu(opcionesSedes, callback);
 
-			cin >> id;
-			buscarPorId<ListaDoble<Sede*>*, Sede>(id, sedes)->data->activar();
 			break;
+		}
 		case 7:
-			cout << "Ingrese el id de la sede a desactivar: ";
+		{
+			vector<string> opcionesSedes;
+			for (int i = 0; i < sedes->getSize(); i++)
+			{
+				opcionesSedes.push_back(sedes->getFormattedByPos([&](Sede* sede) { return to_string(sede->getId()) + sede->getNombre(); }, i));
+			}
+			auto callback = [&](int seleccion) {
+				Nodo<Sede*>* sede = sedes->getByPosition(seleccion);
+				if (sede != nullptr)
+					sede->data->desactivar();
+				return false;
+				};
+			crearMenu(opcionesSedes, callback);
 
-			cin >> id;
-			buscarPorId<ListaDoble<Sede*>*, Sede>(id, sedes)->data->desactivar();
 			break;
+		}
 		case 8:
+			Sede::ordenarPorNombre<ListaDoble<Sede*>*>(sedes, true);
+			sedes->printPaginaSoloIda(5);
+			break;
+		case 9:
 			return false;
 			break;
 		}
@@ -1491,7 +1860,7 @@ void Bcp::crearMenu(const vector<string>& opciones, T callback) {
 		int screenWidth = 120; // Ancho de la pantalla (puedes ajustar esto según sea necesario)
 		int screenHeight = 70; // Alto de la pantalla (puedes ajustar esto según sea necesario)
 		int menuHeight = opciones.size();
-		int startY = 10;
+		int startY = 11;
 
 		for (size_t i = 0; i < opciones.size(); ++i) {
 			int startX = (screenWidth - opciones[i].length() - 4) / 2; // -4 para "> " y " <"
@@ -1534,10 +1903,10 @@ void Bcp::crearFormulario(const vector<string>& campos, T callback) {
 		int screenWidth = 120; // Ancho de la pantalla (puedes ajustar esto según sea necesario)
 		int screenHeight = 70; // Alto de la pantalla (puedes ajustar esto según sea necesario)
 		int menuHeight = campos.size();
-		int startY = 10;
+		int startY = 11;
 
 		for (size_t i = 0; i < campos.size(); ++i) {
-			int startX = (screenWidth - campos[i].length()) / 2;
+			int startX = ((screenWidth - campos[i].length()) / 2) - 10;
 			gotoxy(startX, startY + i);
 			cout << campos[i] << ": ";
 			cin >> valores[i];
@@ -1546,5 +1915,3 @@ void Bcp::crearFormulario(const vector<string>& campos, T callback) {
 		continuar = callback(valores);
 	}
 }
-
-
