@@ -64,8 +64,10 @@ public:
 	void validarOperacion();
 
 	//Ordenamiento avanzado
-	static void ordenarPorFecha(ListaDoble<Operacion*>* lista, bool ascendente);
-	static void ordenarPorMonto(ListaDoble<Operacion*>* lista, bool ascendente);
+	template <typename L>
+	static void ordenarPorFecha(L lista, bool ascendente = true);
+	template <typename L>
+	static void ordenarPorMonto(L lista, bool ascendente = true);
 };
 
 
@@ -161,18 +163,22 @@ void Operacion::leerLinea(string linea) {
 }
 
 void Operacion::print() {
+
+	string tipoOperacion[] = { "Ninguno", "Transferencia", "Deposito", "Retiro" };
+	string estadoOperacion[] = { "Pendiente", "Realizada", "Rechazada" };
+
 	cout << "ID: " << getId() << endl;
 	cout << "IdClienteOrigen: " << idClienteOrigen << endl;
 	cout << "IdClienteDestino: " << idClienteDestino << endl;
 	cout << "IdCuentaBancariaOrigen: " << idCuentaBancariaOrigen << endl;
 	cout << "IdCuentaBancariaDestino: " << idCuentaBancariaDestino << endl;
-	cout << "Tipo: " << TipoOperacion(tipo) << endl;
-	cout << "Estado: " << EstadoOperacion(estado) << endl;
+	cout << "Tipo: " << tipoOperacion[tipo] << endl;
+	cout << "Estado: " << estadoOperacion[estado] << endl;
 	cout << "Monto: " << monto << endl;
 	if (idCanal != 0 ) cout << "IdCanal: " << idCanal << endl;
 	if (idSede != 0)  cout << "IdSede: " << idSede << endl;
-	cout << "Fecha creacion: " << put_time(localtime(&fechaCreacion), "%Y-%m-%d") << endl;
-	cout << "Fecha edicion: " << put_time(localtime(&fechaEdicion), "%Y-%m-%d") << endl;
+	cout << "Fecha creacion: " << put_time(localtime(&fechaCreacion), "%Y-%m-%d %H:%M") << endl;
+	cout << "Fecha edicion: " << put_time(localtime(&fechaEdicion), "%Y-%m-%d %H:%M") << endl;
 }
 
 void Operacion::validarOperacion() {
@@ -188,7 +194,8 @@ void Operacion::validarOperacion() {
 	}
 }
 
-inline void Operacion::ordenarPorFecha(ListaDoble<Operacion*>* lista, bool ascendente)
+template <typename L>
+inline void Operacion::ordenarPorFecha(L lista, bool ascendente)
 {
 	auto compararFechas = [&](Operacion* a, Operacion* b) {
 		return ascendente ? a->getFechaCreacion() < b->getFechaCreacion() : a->getFechaCreacion() > b->getFechaCreacion();
@@ -197,7 +204,8 @@ inline void Operacion::ordenarPorFecha(ListaDoble<Operacion*>* lista, bool ascen
 	lista->mergeSort(&lista->head, compararFechas);
 }
 
-void Operacion::ordenarPorMonto(ListaDoble<Operacion*>* lista, bool ascendente)
+template <typename L>
+inline void Operacion::ordenarPorMonto(L lista, bool ascendente)
 {
 	auto compararMontos = [&](Operacion* a, Operacion* b) {
 		return ascendente ? a->getMonto() < b->getMonto() : a->getMonto() > b->getMonto();

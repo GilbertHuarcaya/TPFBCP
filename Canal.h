@@ -2,6 +2,8 @@
 #include "Elemento.h"
 #include "string"
 #include "sstream"
+#include <iostream>
+
 using namespace std;
 
 enum EstadoCanal {
@@ -61,6 +63,12 @@ public:
 
 	// PRINT
 	void print();
+
+	//SORT
+	template <typename L>
+	static void ordenarPorNombre(L lista, bool ascendente = true);
+	template <typename L>
+	static void ordenarPorEstado(L lista, bool ascendente = true);
 };
 
 Canal::Canal() : Elemento()
@@ -181,12 +189,48 @@ string Canal::escribirLinea()
 
 void Canal::print()
 {
-	cout << "ID:" << endl;
+	string tipoDeCanalStr[] = {
+		"OTROCANAL",
+		"VENTANILLA",
+		"AGENTE",
+		"WEB",
+		"APP",
+		"YAPE",
+		"CAJERO"
+	};
+
+	string estadoStr[] = {
+		"INACTIVO",
+		"ACTIVO"
+	};
+
+	cout << "ID: " << id << endl;
 	if (idSede != 0) {
 		cout << "ID Sede: " << idSede << endl;
 	}
 	cout << "Nombre: " << nombre << endl;
-	cout << "Tipo de Canal: " << tipoDeCanal << endl;
-	cout << "Estado: " << estado << endl;
+	cout << "Tipo de Canal: " << tipoDeCanalStr[tipoDeCanal] << endl;
+	cout << "Estado: " << estadoStr[estado] << endl;
 
+}
+
+template <typename L>
+inline void Canal::ordenarPorNombre(L lista, bool ascendente)
+{
+	auto compararNombres = [&](Canal* a, Canal* b) {
+		return ascendente ? a->getNombre() < b->getNombre() : a->getNombre() > b->getNombre();
+		};
+
+	lista->mergeSort(&lista->head, compararNombres);
+
+}
+
+template <typename L>
+inline void Canal::ordenarPorEstado(L lista, bool ascendente)
+{
+	auto compararEstados = [&](Canal* a, Canal* b) {
+		return ascendente ? a->getEstado() < b->getEstado() : a->getEstado() > b->getEstado();
+		};
+
+	lista->mergeSort(&lista->head, compararEstados);
 }
