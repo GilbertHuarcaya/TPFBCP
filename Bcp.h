@@ -725,7 +725,6 @@ void Bcp::MenuSoloCliente(Cliente* cliente)
 				}
 			} while (contrasenia.size() != 4);
 			CuentaBancaria* nuevaCuentaBancaria = new CuentaBancaria(this->cuentas->getLastId(), cliente->getId(), contrasenia, numero_cuenta, 0);
-			this->cuentas->push_back(nuevaCuentaBancaria);
 			cliente->agregarCuentaBancaria(nuevaCuentaBancaria);
 			agregar(nuevaCuentaBancaria, cuentas);
 			Console::Clear();
@@ -897,7 +896,6 @@ void Bcp::MenuSoloCuentaBancaria(CuentaBancaria* CuentaB)
 			else
 			{
 				Tarjeta* auxiliar = new Tarjeta(this->tarjetas->getLastId(), CuentaB->getIdCliente(), CuentaB->getId());
-				this->tarjetas->push_back(auxiliar);
 				CuentaB->setTarjeta(auxiliar);
 				agregar(auxiliar, tarjetas);
 				gotoxy(40, 12); cout << "Tarjeta aniadida correctamente";
@@ -931,7 +929,6 @@ void Bcp::MenuSoloCuentaBancaria(CuentaBancaria* CuentaB)
 			if (CuentaB->getTarjeta() != nullptr)
 			{
 				Tarjeta* auxiliar = new Tarjeta(this->tarjetas->getLastId(), CuentaB->getIdCliente(), CuentaB->getId());
-				this->tarjetas->push_back(auxiliar);
 				CuentaB->setTarjeta(auxiliar);
 				agregar(auxiliar, tarjetas);
 				gotoxy(40, 12); cout << "Tarjeta renovada correctamente";
