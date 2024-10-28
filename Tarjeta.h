@@ -17,12 +17,14 @@ public:
 	Tarjeta(int id, int idCliente, int idCuentaBancaria);
 	Tarjeta(int id, int idCliente, int idCuentaBancaria, string numero, time_t fechaVencimiento, string cvv);
 
+	//Get-Set
 	int getIdCliente();
 	int getIdCuentaBancaria();
 	string getNumero();
 	time_t getFechaVencimiento();
 	string getCvv();
-
+	void setCvv(string cvv);
+	
 	string generarNumero();
 	string generarCVV();
 	time_t calcularFechaVencimiento(int anios);
@@ -90,6 +92,11 @@ string Tarjeta::getCvv() {
 	return cvv;
 }
 
+void Tarjeta::setCvv(string cvv)
+{
+	this->cvv = cvv;
+}
+
 string Tarjeta::generarNumero() {
 	string numero = "";
 	for (int i = 0; i < 16; i++) {
@@ -102,7 +109,7 @@ string Tarjeta::generarCVV() {
 	return to_string(rand() % 1000 + 100);
 }
 
-time_t Tarjeta::calcularFechaVencimiento(int anios) {
+time_t Tarjeta::calcularFechaVencimiento(int anios = 5) {
 	time_t fecha = time(0);
 	struct tm* tm = localtime(&fecha);
 	tm->tm_year += anios;
