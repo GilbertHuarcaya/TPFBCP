@@ -9,6 +9,7 @@
 #include "Cola.h"
 #include "HashTabla.h"
 #include "ListaDoble.h"
+#include "functional"
 #include "vector"
 #include "iostream"
 
@@ -112,6 +113,13 @@ public:
 	ListaDoble<Canal*>* buscarCanalesSinSede();
 
 	void ejecutarOperacion(Operacion* operacion);
+
+	//Ordenamientos
+	template<class T>
+	void QuickSort(ListaDoble<T>* lista, function<bool(T, T)> comp, int inicio, int fin);
+
+	template<class T>
+	int particion_QS(ListaDoble<T>* lista, function<bool(T, T)> comp, int inicio, int fin);
 
 	//Menu y relacionados
 	void LogoBCP(int x, int y);
@@ -301,7 +309,6 @@ void Bcp::loadHash(HT hash)
 {
 	File<HT, E>::leerHash(hash->getNombreArchivo(), hash);
 }
-
 
 //Cuentas
 
@@ -689,14 +696,14 @@ void Bcp::MenuSoloCliente(Cliente* cliente)
 					numero_cuenta.append(to_string(r.Next(0, 9)));
 					_sleep(100);
 				}
-				while (aux_verif != nullptr)
+				do
 				{
 					if (numero_cuenta == aux_verif->data->getNumeroCuenta())
 					{
 						verificacion = true;
 					}
 					aux_verif = aux_verif->next;
-				}
+				} while (aux_verif != cuentas->getFirst());
 			} while (verificacion);
 			do
 			{
@@ -1157,8 +1164,8 @@ void Bcp::MenuCanales()
 	vector<string> opciones = {
 		"Listar todos los canales",
 		"Listar los canales por tipo",
-		"Listar los canales por sede",
-		"Agregar un canal",
+		"Listar los canales por estado",
+		"Agregar un canal a una sede",
 		"Editar un canal",
 		"Eliminar un canal",
 		"Activar un canal",
@@ -1166,58 +1173,225 @@ void Bcp::MenuCanales()
 		"Salir"
 	};
 
-	string tipo;
-	string sede;
-	int id;
+	int tipo=-1;
+	int activo = -1;
+	int id=0;
 
-	auto callback = [this, &tipo, &sede, &id](int seleccion) {
+	auto callback = [this, &tipo, &activo, &id](int seleccion) {
 		switch (seleccion) {
 		case 0:
-			canales->print();
+			Console::Clear();
+			LogoBCP(18, 1);
+			gotoxy(0, 12);canales->print();
 			system("pause");
 			break;
 		case 1:
-			cout << "Ingrese el tipo: ";
-
-			cin >> tipo;
-			//buscarPorTipo(canales, tipo)->print();
+		{
+			do{
+				Console::Clear();
+				LogoBCP(18, 1);
+				gotoxy(40, 12); cout << "Ingrese el tipo de canal para buscar:";
+				gotoxy(40, 13); cout << "(0: Otro, 1: Ventanilla, 2: Agente";
+				gotoxy(40, 14); cout << "3: Web, 4: App, 5:Yape, 6: Cajero)";
+				gotoxy(50, 15); cin >> tipo;
+			} while (tipo < 0 || tipo>6);
+			Nodo<Canal*>* aux = canales->getFirst();
+			Console::Clear();
+			LogoBCP(18, 1);
+			gotoxy(0, 12);
+			while(aux!=nullptr)
+			{
+				if (aux->data->getTipoDeCanal() == ETipoDeCanal(tipo))
+				{
+					aux->data->print();
+				}
+				aux = aux->next;
+			}
+			system("pause");
 			break;
+		}
 		case 2:
-			cout << "Ingrese la sede: ";
-
-			cin >> sede;
-			//buscarPorSede(canales, sede)->print();
+		{
+			do {
+				Console::Clear();
+				LogoBCP(18, 1);
+				gotoxy(40, 12); cout << "Ingrese la sede de canal para buscar: ";
+				gotoxy(40, 13); cout << "(0: Desactivado, 1: Activado)";
+				gotoxy(40, 13); cin >> activo;
+			} while (activo > 1 || activo < 0);
+			Nodo<Canal*>* aux = canales->getFirst();
+			gotoxy(0, 12);
+			while(aux!=nullptr)
+			{
+				if (aux->data->isActivo()==bool(activo))
+				{
+					aux->data->print();
+				}
+				aux = aux->next;
+			}
+			system("pause");
 			break;
+		}
 		case 3:
-			agregar<ListaDoble<Canal*>*, Canal>(new Canal(getLastId(canales), "Nuevo cajero", CAJERO, 1), canales); // CAJERO por defecto
-			agregar<ListaDoble<Canal*>*, Canal>(new Canal(getLastId(canales),"Web", WEB), canales);
-			agregar<ListaDoble<Canal*>*, Canal>(new Canal(getLastId(canales), "APP", APP), canales);
-			agregar<ListaDoble<Canal*>*, Canal>(new Canal(getLastId(canales), "YAPE", YAPE), canales);
+		{
+			string nombre="";
+			int id;
+			Console::Clear();
+			LogoBCP(18, 1);
+			gotoxy(40, 12); cout << "Ingrese el id de la sede";
+			gotoxy(40, 13); cin >> id;
+			Nodo<Sede*>* auxiliar_sede = buscarPorId<ListaDoble<Sede*>*, Sede>(id, sedes);
+			if (auxiliar_sede == nullptr)
+			{
+				Console::Clear();
+				LogoBCP(18, 1);
+				gotoxy(40, 12); cout << "No se encontro la sede";
+				gotoxy(40, 13); system("pause");
+				break;
+			}
+			gotoxy(40, 12); cout << "Ingrese el nombre del canal";
+			gotoxy(40, 13); cin >> nombre;
+			do{
+				Console::Clear();
+				LogoBCP(18, 1);
+				gotoxy(40, 12); cout << "Ingrese el tipo de canal para buscar:";
+				gotoxy(40, 13); cout << "(0: Otro, 1: Ventanilla, 2: Agente";
+				gotoxy(40, 14); cout << "3: Web, 4: App, 5:Yape, 6: Cajero)";
+				gotoxy(50, 15); cin >> tipo;
+			} while (tipo > 6 || tipo < 0);
+			Canal* aux = new Canal(canales->getLastId(), nombre, tipo,auxiliar_sede->data->getId());
+			agregar<ListaDoble<Canal*>*, Canal>(aux, canales);
+			Console::Clear();
+			LogoBCP(18, 1);
+			gotoxy(40, 12); cout << "Canal agregado correctamente";
+			gotoxy(40, 13); system("pause");
 			break;
+		}
 		case 4:
-			cout << "Ingrese el id del canal a editar: ";
-
-			cin >> id;
-			editar<ListaDoble<Canal*>*, Canal>(buscarPorId<ListaDoble<Canal*>*, Canal>(id, canales)->data, canales);
+		{
+			Console::Clear();
+			LogoBCP(18, 1);
+			gotoxy(40, 12); cout << "Ingrese el id del canal a editar";
+			gotoxy(40, 13); cin >> id;
+			Nodo<Canal*>* aux = buscarPorId<ListaDoble<Canal*>*,Canal>(id, canales);
+			if (aux == nullptr)
+			{
+				Console::Clear();
+				LogoBCP(18, 1);
+				gotoxy(40, 12); cout << "No se encontro el canal";
+				gotoxy(40, 13); system("pause");
+				break;
+			}
+			vector<string> ops = { "Nombre", "Tipo de canal","Salir"};
+			auto callback_ops = [&](int seleccion)
+			{
+				switch (seleccion)
+				{
+				case 0:
+				{
+					string auxiliar;
+					Console::Clear();
+					LogoBCP(18, 1);
+					gotoxy(40, 12); cout << "Nombre anterior: " << aux->data->getNombre();
+					gotoxy(40, 13); cout << "Nuevo nombre:"; cin >> auxiliar;
+					editar(aux->data, canales);
+					gotoxy(40, 15); cout << "Nombre cambiado correctamente";
+					gotoxy(40, 16); system("pause");
+					break;
+				}
+				case 1:
+				{
+					int auxiliar=-1;
+					Console::Clear();
+					do{
+						LogoBCP(18, 1);
+						gotoxy(40, 12); cout << "Ingrese el nuevo tipo de canal: ";
+						gotoxy(40, 13); cout << "(0: Otro, 1: Ventanilla, 2: Agente";
+						gotoxy(40, 14); cout << "3: Web, 4: App, 5:Yape, 6: Cajero)";
+						gotoxy(40, 15); cin >> auxiliar;
+					} while (auxiliar > 6 || auxiliar < 0);
+					aux->data->setTipoDeCanal(ETipoDeCanal(auxiliar));
+					editar(aux->data, canales);
+					gotoxy(40, 17); cout << "Tipo de canal editado correctamente";
+					gotoxy(40, 18); system("pause");
+					break;
+				}
+				case 2:
+					return false;
+					break;
+				}
+				return true;
+			};
+			crearMenu(ops, callback_ops);
 			break;
+		}
 		case 5:
-			cout << "Ingrese el id del canal a eliminar: ";
-
-			cin >> id;
-			eliminar<ListaDoble<Canal*>*, Canal>(buscarPorId<ListaDoble<Canal*>*, Canal>(id, canales)->data, canales);
+		{
+			Console::Clear();
+			LogoBCP(18, 1);
+			gotoxy(40, 12); cout << "Ingrese el id del canal a eliminar";
+			gotoxy(40, 13); cin >> id;
+			Nodo<Canal*>* aux = buscarPorId<ListaDoble<Canal*>*, Canal>(id, canales);
+			if (aux == nullptr)
+			{
+				Console::Clear();
+				LogoBCP(18, 1);
+				gotoxy(40, 12); cout << "No se encontro el canal";
+				gotoxy(40, 13); system("pause");
+				break;
+			}
+			eliminar(aux->data, canales);
+			Console::Clear();
+			LogoBCP(18, 1);
+			gotoxy(40, 12); cout << "Canal eliminado correctamente";
 			break;
+		}
 		case 6:
-			cout << "Ingrese el id del canal a activar: ";
-
-			cin >> id;
-			buscarPorId<ListaDoble<Canal*>*, Canal>(id, canales)->data->activar();
+		{
+			Console::Clear();
+			LogoBCP(18, 1);
+			gotoxy(40, 12); cout << "Ingrese el id del canal a activar: ";
+			gotoxy(40, 13); cin >> id;
+			Nodo<Canal*>* aux = buscarPorId<ListaDoble<Canal*>*, Canal>(id, canales);
+			if (aux == nullptr)
+			{
+				Console::Clear();
+				LogoBCP(18, 1);
+				gotoxy(40, 12); cout << "No se encontro el canal";
+				gotoxy(40, 13); system("pause");
+				break;
+			}
+			aux->data->activar();
+			editar(aux->data, canales);
+			Console::Clear();
+			LogoBCP(18, 1);
+			gotoxy(40, 12); cout << "Canal activado correctamente";
+			gotoxy(40, 13); system("pause");
 			break;
+		}
 		case 7:
-			cout << "Ingrese el id del canal a desactivar: ";
-
-			cin >> id;
-			buscarPorId<ListaDoble<Canal*>*, Canal>(id, canales)->data->desactivar();
+		{
+			Console::Clear();
+			LogoBCP(18, 1);
+			gotoxy(40, 12); cout << "Ingrese el id del canal a activar: ";
+			gotoxy(40, 13); cin >> id;
+			Nodo<Canal*>* aux = buscarPorId<ListaDoble<Canal*>*, Canal>(id, canales);
+			if (aux == nullptr)
+			{
+				Console::Clear();
+				LogoBCP(18, 1);
+				gotoxy(40, 12); cout << "No se encontro el canal";
+				gotoxy(40, 13); system("pause");
+				break;
+			}
+			aux->data->desactivar();
+			editar(aux->data, canales);
+			Console::Clear();
+			LogoBCP(18, 1);
+			gotoxy(40, 12); cout << "Canal desactivado correctamente";
+			gotoxy(40, 13); system("pause");
 			break;
+		}
 		case 8:
 			return false;
 			break;
@@ -1228,12 +1402,708 @@ void Bcp::MenuCanales()
 	crearMenu(opciones, callback);
 }
 
+void Bcp::MenuClientes()
+{
+	vector<string> opciones = {
+		"Listar todos los Clientes",
+		"Listar los clientes por nombre ascendente",
+		"Listar los clientes por apellido ascendente",
+		"Agregar un cliente",
+		"Editar los datos de un cliente",
+		"Buscar un Cliente por id",
+		"Eliminar un cliente",
+		"Salir"
+	};
+
+	int id = 0;
+
+	auto callback = [this,&id](int seleccion) {
+		switch(seleccion)
+		{
+			case 0:
+				Console::Clear();
+				LogoBCP(18, 1);
+				gotoxy(0, 12); clientes->print();
+				system("pause");
+				break;
+			case 1:
+				break;
+			case 2:
+				break;
+			case 3:
+			{
+				Console::Clear();
+				string nombre, apellido, telefono, direccion, email, password;
+				password = "0";
+				//formulario registro de cliente:
+				vector<string> camposRegistro = { "Nombre", "Apellido", "Direccion" };
+				vector<string> camposRegistroTelefono = { "Telefono" };
+				vector<string> camposRegistroEmail = { "Email" };
+				vector<string> camposRegistroContrasenia = { "Contrasenia" };
+
+				crearFormulario(camposRegistro, [&](const vector<string>& valores) -> bool {
+					nombre = valores[0];
+					apellido = valores[1];
+					telefono = valores[2];
+					return false;
+					});
+				crearFormulario(camposRegistroTelefono, [&](const vector<string>& valores) -> bool {
+					bool repetido = false;
+
+					Nodo<Cliente*>* cliente = clientes->searchByValue([&](Cliente* cliente) {
+						return cliente->getTelefono() == valores[0];
+						});
+					repetido = cliente != nullptr;
+
+					if (repetido)
+					{
+						gotoxy(45, 10); cout << "El telefono es repetido. Intente nuevamente";
+						gotoxy(45, 12); system("pause");
+						return true;
+					}
+					telefono = valores[0];
+					return false;
+					});
+				crearFormulario(camposRegistroEmail, [&](const vector<string>& valores) -> bool {
+					bool repetido = false;
+					Nodo<Cliente*>* cliente = clientes->searchByValue([&](Cliente* cliente) {
+						return cliente->getEmail() == valores[0];
+						});
+					repetido = cliente != nullptr;
+					if (repetido)
+					{
+						gotoxy(45, 10); cout << "El email es repetido. Intente nuevamente";
+						gotoxy(45, 12); system("pause");
+						return true;
+					}
+					email = valores[0];
+					return false;
+					});
+				crearFormulario(camposRegistroContrasenia, [&](const vector<string>& valores) -> bool {
+					if (valores[0].size() != 6)
+					{
+						gotoxy(45, 10); cout << "La contrasenia debe de tener 6 digitos";
+						gotoxy(43, 12); system("pause");
+						return true;
+					}
+					password = valores[0];
+					return false;
+					});
+				Cliente* cliente = new Cliente(this->getLastId(clientes), nombre, apellido, direccion, telefono, email, password);
+				agregar(cliente, clientes);
+
+				this->hashClientes->insertar(cliente->getId(), cliente);
+				this->saveHash<HashTabla<Cliente*>*, Cliente>(hashClientes);
+
+				gotoxy(45, 12); cout << LBLUE << "Cuenta Registrada Correctamente" << RESET;
+				gotoxy(45, 14); cout << RED << system("pause") << RESET;
+				Console::Clear();
+				break;
+			}
+			case 4:
+			{
+				Console::Clear();
+				LogoBCP(18, 1);
+				gotoxy(40, 12); cout << "Ingrese el id del cliente";
+				gotoxy(40, 13); cin >> id;
+				Nodo<Cliente*>* aux_cliente = buscarPorId<ListaDoble<Cliente*>*, Cliente>(id, clientes);
+				if (aux_cliente == nullptr)
+				{
+					Console::Clear();
+					LogoBCP(18, 1);
+					gotoxy(40, 12); cout << "No se encontro el cliente";
+					gotoxy(40, 13); system("pause");
+					break;
+				}
+				vector<string> opciones = { "Nombre", "Apellido", "Telefono", "Direccion", "Email", "Contrasenia", "Salir" };
+				string aux;
+				auto callback = [&](int opcion) {
+					switch (opcion)
+					{
+					case 0:
+						Console::Clear();
+						LogoBCP(18, 1);
+						gotoxy(40, 14); cout << "Nombre anterior: " << aux_cliente->data->getNombre();
+						gotoxy(40, 15); cout << "Nuevo Nombre: "; cin >> aux;
+						aux_cliente->data->setNombre(aux);
+						editar(aux_cliente->data, clientes);
+						gotoxy(40, 17); cout << "Nombre cambiado correctamente";
+						gotoxy(40, 18); system("pause");
+						Console::Clear();
+						break;
+					case 1:
+						Console::Clear();
+						LogoBCP(18, 1);
+						gotoxy(40, 14); cout << "Apellido anterior: " << aux_cliente->data->getApellido();
+						gotoxy(40, 15); cout << "Nuevo telefono: "; cin >> aux;
+						aux_cliente->data->setApellido(aux);
+						editar(aux_cliente->data, clientes);
+						gotoxy(40, 17); cout << "Apellido cambiado correctamente";
+						gotoxy(40, 18); system("pause");
+						Console::Clear();
+						break;
+					case 2:
+						Console::Clear();
+						LogoBCP(18, 1);
+						gotoxy(40, 14); cout << "Telefono anterior: " << aux_cliente->data->getTelefono();
+						gotoxy(40, 15); cout << "Nuevo telefono: "; cin >> aux;
+						aux_cliente->data->setTelefono(aux);
+						editar(aux_cliente->data, clientes);
+						gotoxy(40, 17); cout << "Telefono cambiado correctamente";
+						gotoxy(40, 18); system("pause");
+						Console::Clear();
+						break;
+					case 3:
+						Console::Clear();
+						LogoBCP(18, 1);
+						gotoxy(40, 14); cout << "Direccion anterior: " << aux_cliente->data->getDireccion();
+						gotoxy(40, 15); cout << "Nueva direccion: "; cin >> aux;
+						aux_cliente->data->setDireccion(aux);
+						editar(aux_cliente->data, clientes);
+						gotoxy(40, 17); cout << "Direccion cambiada correctamente";
+						gotoxy(40, 18); system("pause");
+						Console::Clear();
+						break;
+					case 4:
+						Console::Clear();
+						LogoBCP(18, 1);
+						gotoxy(40, 14); cout << "Email anterior: " << aux_cliente->data->getEmail();
+						gotoxy(40, 15); cout << "Nuevo email: "; cin >> aux;
+						aux_cliente->data->setEmail(aux);
+						editar(aux_cliente->data, clientes);
+						gotoxy(40, 17); cout << "Email cambiado correctamente";
+						gotoxy(40, 18); system("pause");
+						Console::Clear();
+						break;
+					case 5:
+						Console::Clear();
+						LogoBCP(18, 1);
+						gotoxy(40, 14); cout << "Contrasenia anterior: " << aux_cliente->data->getPassword();
+						gotoxy(40, 15); cout << "Nueva contrasenia: "; cin >> aux;
+						aux_cliente->data->setPassword(aux);
+						editar(aux_cliente->data, clientes);
+						gotoxy(40, 17); cout << "Contrasenia cambiada correctamente";
+						gotoxy(40, 18); system("pause");
+						Console::Clear();
+						break;
+					case 6:
+						return false;
+						break;
+					}
+					return true;
+					};
+				crearMenu(opciones, callback);
+				break;
+			}
+			case 5:
+			{
+				Console::Clear();
+				LogoBCP(18, 1);
+				gotoxy(40, 12); cout << "Ingrese el id del cliente";
+				gotoxy(40, 13); cin >> id;
+				Nodo<Cliente*>* aux = buscarPorId<ListaDoble<Cliente*>*, Cliente>(id, clientes);
+				if (aux == nullptr)
+				{
+					Console::Clear();
+					LogoBCP(18, 1);
+					gotoxy(40, 12); cout << "No se encontro el cliente";
+					gotoxy(40, 13); system("pause");
+					break;
+				}
+				aux->data->print();
+				system("pause");
+				break;
+			}
+			case 6:
+			{
+				Console::Clear();
+				LogoBCP(18, 1);
+				gotoxy(40, 12); cout << "Ingrese el id del cliente a eliminar";
+				gotoxy(40, 13); cin >> id;
+				Nodo<Cliente*>* aux = buscarPorId<ListaDoble<Cliente*>*, Cliente>(id, clientes);
+				if (aux == nullptr)
+				{
+					Console::Clear();
+					LogoBCP(18, 1);
+					gotoxy(40, 12); cout << "No se encontro el cliente";
+					gotoxy(40, 13); system("pause");
+					break;
+				}
+				Nodo<CuentaBancaria*>* auxCB = cuentas->getFirst();
+				while(auxCB!=nullptr)
+				{
+					if (auxCB->data->getIdCliente() == aux->data->getId())
+					{
+						eliminar<ListaDoble<Tarjeta*>*, Tarjeta>(auxCB->data->getTarjeta(), tarjetas);
+						eliminar<ListaDoble<CuentaBancaria*>*, CuentaBancaria>(auxCB->data, cuentas);
+					}
+					auxCB = auxCB->next;
+				}
+				eliminar<ListaDoble<Cliente*>*, Cliente>(aux->data, clientes);
+				Console::Clear();
+				LogoBCP(18, 1);
+				gotoxy(40, 12); cout << "Cliente eliminado correctamente";
+				gotoxy(40, 13); system("pause");
+				break;
+			}
+			case 7:
+				return false;
+				break;
+		}	
+		return true;
+	};
+
+	crearMenu(opciones, callback);
+}
+
+void Bcp::MenuOperaciones()
+{
+	vector<string> opciones = {
+		"Listar todas las Operaciones",
+		"Realizar una operacion",
+		"Buscar una Operacion por id",
+		"Eliminar una operacion",
+		"Salir"
+	};
+
+	int id = 0;
+
+	auto callback = [this,&id](int seleccion) {
+		switch (seleccion)
+		{
+		case 0:
+			operaciones->print();
+			system("pause");
+			break;
+		case 1:
+			//
+			break;
+		case 2:
+		{
+			gotoxy(40, 12); cout << "Ingrese el id de la operacion";
+			gotoxy(40, 13); cin >> id;
+			Nodo<Operacion*>* aux = buscarPorId<ListaDoble<Operacion*>*, Operacion>(id, operaciones);
+			if (aux == nullptr)
+			{
+				Console::Clear();
+				LogoBCP(18, 1);
+				gotoxy(40, 12); cout << "No se encontro la operacion";
+				gotoxy(40, 13); system("pause");
+				break;
+			}
+			aux->data->print();
+			system("pause");
+			break;
+		}
+		case 3:
+		{
+			gotoxy(40, 12); cout << "Ingrese el id de la operacion a eliminar";
+			gotoxy(40, 13); cin >> id;
+			Nodo<Operacion*>* aux = buscarPorId<ListaDoble<Operacion*>*, Operacion>(id, operaciones);
+			if (aux == nullptr)
+			{
+				Console::Clear();
+				LogoBCP(18, 1);
+				gotoxy(40, 12); cout << "No se encontro la operacion";
+				gotoxy(40, 13); system("pause");
+				break;
+			}
+			eliminar(aux->data, operaciones);
+			Console::Clear();
+			LogoBCP(18, 1);
+			gotoxy(40, 12); cout << "Operacion eliminada correctamente";
+			gotoxy(40, 13); system("pause");
+			break;
+		}
+		case 4:
+			return false;
+			break;
+		}
+		return true;
+	};
+
+	crearMenu(opciones, callback);
+}
+
+void Bcp::MenuCuentas()
+{
+	vector<string> opciones = {
+		"Listar todas las Cuentas Bancarias",
+		"Agregar una Cuenta Bancaria a un Cliente",
+		"Editar los datos de una Cuenta Bancaria",
+		"Buscar una Cuenta Bancaria por id",
+		"Eliminar una Cuenta Bancaria",
+		"Salir"
+	};
+
+	int id = 0;
+
+	auto callback = [this,&id](int seleccion) {
+		switch (seleccion) {
+		case 0:
+			Console::Clear();
+			LogoBCP(18, 1);
+			gotoxy(0, 12); cuentas->print();
+			system("pause");
+			break;
+		case 1:
+		{
+			Console::Clear();
+			LogoBCP(18, 1);
+			gotoxy(40, 12); cout << "Ingrese el id del cliente";
+			gotoxy(40, 13); cin >> id;
+			Nodo<Cliente*>* aux = buscarPorId<ListaDoble<Cliente*>*, Cliente>(id, clientes);
+			if (aux == nullptr)
+			{
+				Console::Clear();
+				LogoBCP(18, 1);
+				gotoxy(40, 12); cout << "No se encontro el cliente";
+				gotoxy(40, 13); system("pause");
+				break;
+			}
+			string numero_cuenta;//14 digitos
+			string contrasenia;
+			bool verificacion;
+			do
+			{
+				numero_cuenta = "";
+				verificacion = false;
+				Nodo<CuentaBancaria*>* aux_verif = this->cuentas->getFirst();
+				for (int i = 0; i < 14; i++)
+				{
+					Random r;
+					numero_cuenta.append(to_string(r.Next(0, 9)));
+					_sleep(100);
+				}
+				while(aux_verif!=nullptr)
+				{
+					if (numero_cuenta == aux_verif->data->getNumeroCuenta())
+					{
+						verificacion = true;
+					}
+					aux_verif = aux_verif->next;
+				}
+			} while (verificacion);
+			do
+			{
+				gotoxy(30, 12); cout << "Ingrese la contrasenia para la cuenta (4 digitos)";
+				gotoxy(50, 14); cin >> contrasenia;
+				if (contrasenia.size() != 4)
+				{
+					Console::Clear();
+					LogoBCP(18, 1);
+				}
+			} while (contrasenia.size() != 4);
+			CuentaBancaria* nuevaCuentaBancaria = new CuentaBancaria(this->cuentas->getLastId(), aux->data->getId(), contrasenia, numero_cuenta, 0);
+			this->cuentas->push_back(nuevaCuentaBancaria);
+			aux->data->agregarCuentaBancaria(nuevaCuentaBancaria);
+			agregar(nuevaCuentaBancaria, cuentas);
+			Console::Clear();
+			LogoBCP(18, 1);
+			gotoxy(40, 12); cout << "Cuenta bancaria agregada correctamente";
+			gotoxy(40, 14); system("pause");
+			Console::Clear();
+			break;
+		}
+		case 2:
+		{
+			Console::Clear();
+			LogoBCP(18, 1);
+			gotoxy(40, 12); cout << "Ingrese el id del cliente";
+			gotoxy(40, 13); cin >> id;
+			Nodo<CuentaBancaria*>* aux = buscarPorId<ListaDoble<CuentaBancaria*>*, CuentaBancaria>(id, cuentas);
+			if (aux == nullptr)
+			{
+				Console::Clear();
+				LogoBCP(18, 1);
+				gotoxy(40, 12); cout << "No se encontro el cliente";
+				gotoxy(40, 13); system("pause");
+				break;
+			}
+			Console::Clear();
+			vector<string> ops = { "Contrasenia","Saldo","Salir"};
+			int aux_int=0;
+			auto callback_ops = [&](int seleccion)
+				{
+					switch (seleccion)
+					{
+					case 0:
+					{
+						string aux_str = "";
+						do {
+							Console::Clear();
+							LogoBCP(18, 1);
+							gotoxy(40, 12); cout << "Ingrese la nueva contrasenia";
+							gotoxy(40, 13); cin >> aux_str;
+						} while (aux_str.length() != 4);
+						aux->data->setPassword(aux_str);
+						editar(aux->data, cuentas);
+						Console::Clear();
+						LogoBCP(18, 1);
+						gotoxy(40, 12); cout << "Contasenia cambiada correctamente";
+						gotoxy(40, 13); system("pause");
+						break;
+					}
+					case 1:
+					{
+						double saldo = 0;
+						gotoxy(40, 12); cout << "Ingrese la cantidad de saldo a sumar en la cuenta";
+						gotoxy(40, 13); cin >> saldo;
+						aux->data->setSaldo(aux->data->getSaldo() + saldo);
+						Console::Clear();
+						LogoBCP(18, 1);
+						gotoxy(40, 12); cout << "Saldo aumentado en " << saldo << " correctamente";
+						gotoxy(40, 13); system("pause");
+						break;
+					}
+					case 2:
+						return false;
+						break;
+					}
+					return true;
+				};
+			crearMenu(ops, callback_ops);
+			break;
+		}
+		case 3:
+		{
+			Console::Clear();
+			LogoBCP(18, 1);
+			gotoxy(40, 12); cout << "Ingrese el id de la cuenta a buscar";
+			gotoxy(40, 13); cin >> id;
+			if (buscarPorId<ListaDoble<CuentaBancaria*>*, CuentaBancaria>(id, cuentas) == nullptr)
+			{
+				Console::Clear();
+				LogoBCP(18, 1);
+				gotoxy(40, 12); cout << "No se encontro la cuenta bancaria";
+				gotoxy(40, 13); system("pause");
+				break;
+			}
+			buscarPorId<ListaDoble<CuentaBancaria*>*, CuentaBancaria>(id, cuentas)->data->print();
+			break;
+		}
+		case 4:
+		{
+			Console::Clear();
+			LogoBCP(18, 1);
+			gotoxy(40, 12); cout << "Ingrese el id de la cuenta a eliminar";
+			gotoxy(40, 13); cin >> id;
+			Nodo<CuentaBancaria*>* aux = buscarPorId<ListaDoble<CuentaBancaria*>*,CuentaBancaria>(id, cuentas);
+			if (aux == nullptr)
+			{
+				Console::Clear();
+				LogoBCP(18, 1);
+				gotoxy(40, 12); cout << "No se encontro la cuenta bancaria";
+				gotoxy(40, 13); system("pause");
+				break;
+			}
+			eliminar(aux->data->getTarjeta(), tarjetas);
+			eliminar(aux->data, cuentas);
+			Console::Clear();
+			LogoBCP(18, 1);
+			gotoxy(40, 12); cout << "Cuenta eliminada correctamente";
+			gotoxy(40, 13); system("pause");
+			break;
+		}
+		case 5:
+			return false;
+			break;
+		}
+		return true;
+	};
+
+	crearMenu(opciones, callback);
+}
+
+void Bcp::MenuTarjetas()
+{
+	vector<string> opciones = {
+		"Listar todas las Tarjetas",
+		"Agregar una Tarjeta a una Cuenta Bancaria",
+		"Editar CVV de una Tarjeta",
+		"Buscar una Tarjeta por id",
+		"Eliminar una Tarjeta",
+		"Salir"
+	};
+
+	int id = 0;
+	int cvv = 0;
+
+	auto callback = [this,&id](int seleccion) {
+		switch (seleccion)
+		{
+		case 0:
+			Console::Clear();
+			LogoBCP(18, 1);
+			gotoxy(0, 12); tarjetas->print();
+			system("pause");
+			break;
+		case 1:
+		{
+			Console::Clear();
+			LogoBCP(18, 1);
+			gotoxy(40, 12); cout << "Ingrese el id del Cliente";
+			gotoxy(40, 13); cin >> id;
+			Nodo<Cliente*>* aux = buscarPorId<ListaDoble<Cliente*>*, Cliente>(id, clientes);
+			if (aux != nullptr)
+			{
+				Console::Clear();
+				LogoBCP(18, 1);
+				gotoxy(40, 12); cout << "Ingrese el id de la Cuenta Bancaria al que desee agregar una Tarjeta";
+				gotoxy(40, 13); cin >> id;
+				Nodo<CuentaBancaria*>* aux_CB = aux->data->getCuentasBancarias()->search(id);
+				if (aux_CB != nullptr)
+				{
+					aux_CB->data->loadTarjeta();
+					if (aux_CB->data->getTarjeta() == nullptr)
+					{
+						Tarjeta* auxiliar = new Tarjeta(this->tarjetas->getLastId(), aux_CB->data->getIdCliente(), aux->data->getId());
+						this->tarjetas->push_back(auxiliar);
+						aux_CB->data->setTarjeta(auxiliar);
+						agregar(auxiliar, tarjetas);
+						gotoxy(40, 12); cout << "Tarjeta aniadida correctamente";
+						gotoxy(40, 13); system("pause");
+					}
+					else
+					{
+						Console::Clear();
+						LogoBCP(18, 1);
+						gotoxy(40, 12); cout << "Esta cuenta ya tiene una tarjeta";
+						gotoxy(40, 13); system("pause");
+					}
+				}
+				else
+				{
+					Console::Clear();
+					LogoBCP(18, 1);
+					gotoxy(40, 12); cout << "No se encontro la Cuenta Bancaria del cliente";
+					gotoxy(40, 13); system("pause");
+				}
+			}
+			else
+			{
+				Console::Clear();
+				LogoBCP(18, 1);
+				gotoxy(40, 12); cout << "No se encontro el id del cliente";
+				gotoxy(40, 13); system("pause");
+			}
+			break;
+		}
+		case 2:
+		{
+			Console::Clear();
+			LogoBCP(18, 1);
+			gotoxy(40, 12); cout << "Ingrese el id de la tarjeta a editar";
+			gotoxy(40, 13); cin >> id;
+			Nodo<Tarjeta*>* aux = buscarPorId<ListaDoble<Tarjeta*>*, Tarjeta>(id, tarjetas);
+			Console::Clear();
+			LogoBCP(18, 1);
+			if (aux == nullptr)
+			{
+				gotoxy(40, 12); cout << "No se encontro la tarjeta";
+				gotoxy(40, 13); system("pause");
+				break;
+			}
+			Random r(time(NULL));
+			aux->data->setCvv(to_string(r.Next(101,1000)-1));
+			editar<ListaDoble<Tarjeta*>*, Tarjeta>(aux->data, tarjetas);
+			gotoxy(40, 12); cout << "Cvv de la tarjeta editada correctamente";
+			gotoxy(40, 13); system("pause");
+			break;
+		}
+		case 3:
+		{
+			Console::Clear();
+			LogoBCP(18, 1);
+			gotoxy(40, 12); cout << "Ingrese el id de la tarjeta";
+			gotoxy(40, 13); cin >> id;
+			buscarPorId<ListaDoble<Tarjeta*>*, Tarjeta>(id, tarjetas)->data->print();
+			system("pause");
+			break;
+		}
+		case 4:
+		{
+			Console::Clear();
+			LogoBCP(18, 1);
+			gotoxy(40, 12); cout << "Ingrese el id de la tarjeta a eliminar";
+			gotoxy(40, 13); cin >> id;
+			Nodo<Tarjeta*>* aux = buscarPorId<ListaDoble<Tarjeta*>*, Tarjeta>(id, tarjetas);
+			if (aux == nullptr) {
+				Console::Clear();
+				LogoBCP(18, 1);
+				gotoxy(40, 12); cout << "No se encontro la tarjeta";
+				gotoxy(40, 13); system("pause");
+				break;
+			}
+			Tarjeta* aux_tarjeta = buscarPorId<ListaDoble<CuentaBancaria*>*, CuentaBancaria>(aux->data->getIdCuentaBancaria(), cuentas)->data->getTarjeta();
+			delete aux_tarjeta;
+			buscarPorId<ListaDoble<CuentaBancaria*>*, CuentaBancaria>(aux->data->getIdCuentaBancaria(), cuentas)->data->setTarjeta(nullptr);
+			eliminar<ListaDoble<Tarjeta*>*, Tarjeta>(aux->data, tarjetas);
+			Console::Clear();
+			LogoBCP(18, 1);
+			gotoxy(40, 12); cout << "Tarjeta eliminada correctamente";
+			gotoxy(40, 13); system("pause");
+			break;
+		}
+		case 5:
+			return false;
+			break;
+		}
+		return true;
+	};
+
+	crearMenu(opciones, callback);
+}
+
+void Bcp::MenuAdmin()
+{
+	vector<string> opciones = {
+		"Lista de Clientes",
+		"Lista de Cuentas Bancarias",
+		"Lista de Tarjetas",
+		"Lista de Operaciones",
+		"Lista de Canales",
+		"Lista de Sedes",
+		"Salir"
+	};
+
+	auto callback = [this](int seleccion) {
+		switch (seleccion) {
+		case 0:
+			MenuClientes();
+			break;
+		case 1:
+			MenuCuentas();
+			break;
+		case 2:
+			MenuTarjetas();
+			break;
+		case 3:
+			MenuOperaciones();
+			break;
+		case 4:
+			MenuCanales();
+			break;
+		case 5:
+			MenuSedes();
+			break;
+		case 6:
+			return false;
+			break;
+		}
+		return true;
+	};
+
+	crearMenu(opciones, callback);
+}
+
 void Bcp::MenuSedes()
 {
 	vector<string> opciones = {
 		"Listar todas las sedes",
 		"Listar las sedes por ciudad",
 		"Listar las sedes por departamento",
+		"Listar las sedes por distrito",
 		"Agregar una sede",
 		"Editar una sede",
 		"Eliminar una sede",
@@ -1241,56 +2111,286 @@ void Bcp::MenuSedes()
 		"Desactivar una sede",
 		"Salir"
 	};
-	string ciudad;
-	string departamento;
+	string ciudad = "";
+	string departamento = "";
+	string distrito = "";
 	int id;
 
-	auto callback = [this, &ciudad, &departamento, &id](int seleccion) {
+	auto callback = [this, &ciudad, &departamento, &id, &distrito](int seleccion) {
 		switch (seleccion) {
 		case 0:
-			sedes->print();
+			Console::Clear();
+			LogoBCP(18, 1);
+			gotoxy(0, 12); sedes->print();
 			system("pause");
 			break;
 		case 1:
-			cout << "Ingrese la ciudad: ";
-	
-			cin >> ciudad;
-			//buscarPorCiudad(sedes, ciudad)->print();
+		{
+			Console::Clear();
+			LogoBCP(18, 1);
+			gotoxy(40, 12); cout << "Ingrese la ciudad: ";
+			gotoxy(40, 13); cin >> ciudad;
+			Console::Clear();
+			LogoBCP(18, 1);
+			gotoxy(0, 12);
+			Nodo<Sede*>* aux = sedes->getFirst();
+			while( aux != nullptr)
+			{
+				if (aux->data->getCiudad() == ciudad)
+				{
+					aux->data->print();
+				}
+				aux = aux->next;
+			}
+			system("pause");
 			break;
+		}
 		case 2:
-			cout << "Ingrese el departamento: ";
-
-			cin >> departamento;
-			//buscarPorDepartamento(sedes, departamento)->print();
+		{
+			Console::Clear();
+			LogoBCP(18, 1);
+			gotoxy(40, 12); cout << "Ingrese el departamento: ";
+			gotoxy(40, 13); cin >> departamento;
+			Console::Clear();
+			LogoBCP(18, 1);
+			gotoxy(0, 12);
+			Nodo<Sede*>* aux = sedes->getFirst();
+			while(aux!=nullptr)
+			{
+				if (aux->data->getCiudad() == departamento)
+				{
+					aux->data->print();
+				}
+				aux = aux->next;
+			}
+			system("pause");
 			break;
+		}
 		case 3:
-			agregar<ListaDoble<Sede*>*, Sede>(new Sede(getLastId(sedes), "nueva sede","Calle las Amapolas", "lima", "Lince", "Lima", "99857463", "nuevaSede@email.com"), sedes);
+		{
+			Console::Clear();
+			LogoBCP(18, 1);
+			gotoxy(40, 12); cout << "Ingrese el distrito: ";
+			gotoxy(40, 13); cin >> distrito;
+			Console::Clear();
+			LogoBCP(18, 1);
+			gotoxy(0, 12);
+			Nodo<Sede*>* aux = sedes->getFirst();
+			while(aux!=nullptr)
+			{
+				if (aux->data->getCiudad() == distrito)
+				{
+					aux->data->print();
+				}
+				aux = aux->next;
+			}
+			system("pause");
 			break;
+		}
 		case 4:
-			cout << "Ingrese el id de la sede a editar: ";
-			
-			cin >> id;
-			editar<ListaDoble<Sede*>*, Sede>(buscarPorId<ListaDoble<Sede*>*, Sede>(id, sedes)->data, sedes);
+		{
+			string nombre, direccion, tlf, email;
+			Console::Clear();
+			LogoBCP(18, 1);
+			gotoxy(40, 12); cout << "Ingrese el nombre";
+			gotoxy(40, 13); cin >> nombre;
+			Console::Clear();
+			LogoBCP(18, 1);
+			gotoxy(40, 12); cout << "Ingrese la direccion";
+			gotoxy(40, 13); cin >> direccion;
+			Console::Clear();
+			LogoBCP(18, 1);
+			gotoxy(40, 12); cout << "Ingrese la ciudad";
+			gotoxy(40, 13); cin >> ciudad;
+			Console::Clear();
+			LogoBCP(18, 1);
+			gotoxy(40, 12); cout << "Ingrese el distrito";
+			gotoxy(40, 13); cin >> distrito;
+			Console::Clear();
+			LogoBCP(18, 1);
+			gotoxy(40, 12); cout << "Ingrese el departamento";
+			gotoxy(40, 13); cin >> departamento;
+			Console::Clear();
+			LogoBCP(18, 1);
+			gotoxy(40, 12); cout << "Ingrese el telefono";
+			gotoxy(40, 13); cin >> tlf;
+			Console::Clear();
+			LogoBCP(18, 1);
+			gotoxy(40, 12); cout << "Ingrese el email";
+			gotoxy(40, 13); cin >> email;
+			agregar<ListaDoble<Sede*>*, Sede>(new Sede(getLastId(sedes), "nueva sede", "Calle las Amapolas", "lima", "Lince", "Lima", "99857463", "nuevaSede@email.com"), sedes);
+			Console::Clear();
+			LogoBCP(18, 1);
+			gotoxy(40, 12); cout << "Sede agregada correctamente";
+			gotoxy(40, 13); system("pause");
 			break;
+		}
 		case 5:
-			cout << "Ingrese el id de la sede a eliminar: ";
-
-			cin >> id;
-			eliminar<ListaDoble<Sede*>*, Sede>(buscarPorId<ListaDoble<Sede*>*, Sede>(id, sedes)->data, sedes);
+		{
+			Console::Clear();
+			LogoBCP(18, 1);
+			gotoxy(40, 12); cout << "Ingrese el id de la sede a editar";
+			gotoxy(40, 13); cin >> id;
+			if (buscarPorId<ListaDoble<Sede*>*, Sede>(id, sedes) == nullptr)
+			{
+				Console::Clear();
+				LogoBCP(18, 1);
+				gotoxy(40, 12); cout << "No se encontro la sede";
+				gotoxy(40, 13); system("pause");
+				break;
+			}
+			Nodo<Sede*>* aux_sede = buscarPorId<ListaDoble<Sede*>*, Sede>(id, sedes);
+			vector<string> ops = { "Nombre","Direccion","Ciudad","Distrito","Departamento","Telefono","Email","Salir" };
+			string aux;
+			auto callback_ops = [&](int seleccion)
+				{
+					switch (seleccion)
+					{
+					case 0:
+						Console::Clear();
+						LogoBCP(18, 1);
+						gotoxy(40, 12); cout << "Ingrese el nuevo nombre";
+						gotoxy(40, 13); cin >> aux;
+						aux_sede->data->setNombre(aux);
+						Console::Clear();
+						LogoBCP(18, 1);
+						gotoxy(40, 12); cout << "Nombre cambiado correctamente";
+						gotoxy(40, 13); system("pause");
+						break;
+					case 1:
+						Console::Clear();
+						LogoBCP(18, 1);
+						gotoxy(40, 12); cout << "Ingrese la nueva direccion";
+						gotoxy(40, 13); cin >> aux;
+						aux_sede->data->setDireccion(aux);
+						Console::Clear();
+						LogoBCP(18, 1);
+						gotoxy(40, 12); cout << "Direccion cambiada correctamente";
+						gotoxy(40, 13); system("pause");
+						break;
+					case 2:
+						Console::Clear();
+						LogoBCP(18, 1);
+						gotoxy(40, 12); cout << "Ingrese la nueva ciudad";
+						gotoxy(40, 13); cin >> aux;
+						aux_sede->data->setCiudad(aux);
+						Console::Clear();
+						LogoBCP(18, 1);
+						gotoxy(40, 12); cout << "Ciudad cambiada correctamente";
+						gotoxy(40, 13); system("pause");
+						break;
+					case 3:
+						Console::Clear();
+						LogoBCP(18, 1);
+						gotoxy(40, 12); cout << "Ingrese el nuevo distrito";
+						gotoxy(40, 13); cin >> aux;
+						aux_sede->data->setDistrito(aux);
+						Console::Clear();
+						LogoBCP(18, 1);
+						gotoxy(40, 12); cout << "Distrito cambiado correctamente";
+						gotoxy(40, 13); system("pause");
+						break;
+					case 4:
+						Console::Clear();
+						LogoBCP(18, 1);
+						gotoxy(40, 12); cout << "Ingrese el nuevo departamento";
+						gotoxy(40, 13); cin >> aux;
+						aux_sede->data->setDepartamento(aux);
+						Console::Clear();
+						LogoBCP(18, 1);
+						gotoxy(40, 12); cout << "Departamento cambiado correctamente";
+						gotoxy(40, 13); system("pause");
+						break;
+					case 5:
+						Console::Clear();
+						LogoBCP(18, 1);
+						gotoxy(40, 12); cout << "Ingrese el nuevo telefono";
+						gotoxy(40, 13); cin >> aux;
+						aux_sede->data->setTelefono(aux);
+						Console::Clear();
+						LogoBCP(18, 1);
+						gotoxy(40, 12); cout << "Telefono cambiado correctamente";
+						gotoxy(40, 13); system("pause");
+						break;
+					case 6:
+						Console::Clear();
+						LogoBCP(18, 1);
+						gotoxy(40, 12); cout << "Ingrese el nuevo email";
+						gotoxy(40, 13); cin >> aux;
+						aux_sede->data->setEmail(aux);
+						Console::Clear();
+						LogoBCP(18, 1);
+						gotoxy(40, 12); cout << "Email cambiado correctamente";
+						gotoxy(40, 13); system("pause");
+						break;
+					case 7:
+						return false;
+						break;
+					}
+					return true;
+				};
+			crearMenu(ops, callback_ops);
+			editar(aux_sede->data, sedes);
 			break;
+		}
 		case 6:
-			cout << "Ingrese el id de la sede a activar: ";
-
-			cin >> id;
-			buscarPorId<ListaDoble<Sede*>*, Sede>(id, sedes)->data->activar();
+			Console::Clear();
+			LogoBCP(18, 1);
+			gotoxy(40, 12); cout << "Ingrese el id de la sede a eliminar";
+			gotoxy(40, 13); cin >> id;
+			if (buscarPorId<ListaDoble<Sede*>*, Sede>(id, sedes) == nullptr)
+			{
+				Console::Clear();
+				LogoBCP(18, 1);
+				gotoxy(40, 12); cout << "No se encontro la sede";
+				gotoxy(40, 13); system("pause");
+				break;
+			}
+			eliminar<ListaDoble<Sede*>*, Sede>(buscarPorId<ListaDoble<Sede*>*, Sede>(id, sedes)->data, sedes);
+			Console::Clear();
+			LogoBCP(18, 1);
+			gotoxy(40, 12); cout << "Sede eliminada";
+			gotoxy(40, 13); system("pause");
 			break;
 		case 7:
-			cout << "Ingrese el id de la sede a desactivar: ";
-
+			Console::Clear();
+			LogoBCP(18, 1);
+			cout << "Ingrese el id de la sede a activar: ";
 			cin >> id;
-			buscarPorId<ListaDoble<Sede*>*, Sede>(id, sedes)->data->desactivar();
+			if (buscarPorId<ListaDoble<Sede*>*, Sede>(id, sedes) == nullptr)
+			{
+				Console::Clear();
+				LogoBCP(18, 1);
+				gotoxy(40, 12); cout << "No se encontro la sede";
+				gotoxy(40, 13); system("pause");
+				break;
+			}
+			buscarPorId<ListaDoble<Sede*>*, Sede>(id, sedes)->data->activar();
+			Console::Clear();
+			LogoBCP(18, 1);
+			gotoxy(40, 12); cout << "Sede activada";
+			gotoxy(40, 13); system("pause");
 			break;
 		case 8:
+			Console::Clear();
+			LogoBCP(18, 1);
+			gotoxy(40, 12); cout << "Ingrese el id de la sede a desactivar: ";
+			gotoxy(40, 13); cin >> id;
+			if (buscarPorId<ListaDoble<Sede*>*, Sede>(id, sedes) == nullptr)
+			{
+				Console::Clear();
+				LogoBCP(18, 1);
+				gotoxy(40, 12); cout << "No se encontro la sede";
+				gotoxy(40, 13); system("pause");
+				break;
+			}
+			buscarPorId<ListaDoble<Sede*>*, Sede>(id, sedes)->data->desactivar();
+			Console::Clear();
+			LogoBCP(18, 1);
+			gotoxy(40, 12); cout << "Sede desactivada";
+			gotoxy(40, 13); system("pause");
+			break;
+		case 9:
 			return false;
 			break;
 		}
@@ -1369,4 +2469,33 @@ void Bcp::crearFormulario(const vector<string>& campos, T callback) {
 	}
 }
 
+template<class T>
+void Bcp::QuickSort(ListaDoble<T>* lista, function<bool(T, T)> comp, int inicio, int fin)
+{
+	if (inicio < fin)
+	{
+		int pivote = particion_QS(lista, comp, inicio, fin);
+		QuickSort<T>(lista, comp, inicio, pivote - 1);
+		QuickSort<T>(lista, comp, pivote + 1, fin);
+	}
+}
 
+template<class T>
+int Bcp::particion_QS(ListaDoble<T>* lista, function<bool(T, T)> comp, int inicio, int fin)
+{
+	Nodo<T>* pivote = lista->getByPosition(fin - 1);
+	int i = inicio - 1;
+	for (int j = inicio; j < fin; j++)
+	{
+		if (comp(lista->getByPosition(j)->data, pivote->data))
+		{
+			i++;
+			T* aux = lista->getByPosition(j)->data;
+			lista->getByPosition(j)->data = lista->getByPosition(i)->data;
+			lista->getByPosition(i)->data = aux;
+		}
+	}
+	T* aux = lista->getByPosition(fin)->data;
+	lista->getByPosition(fin)->data = lista->getByPosition(i + 1)->data;
+	lista->getByPosition(i + 1)->data = aux;
+}
