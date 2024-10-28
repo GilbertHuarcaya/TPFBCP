@@ -102,7 +102,7 @@ string Tarjeta::generarCVV() {
 	return to_string(rand() % 1000 + 100);
 }
 
-time_t Tarjeta::calcularFechaVencimiento(int anios) {
+time_t Tarjeta::calcularFechaVencimiento(int anios = 5) {
 	time_t fecha = time(0);
 	struct tm* tm = localtime(&fecha);
 	tm->tm_year += anios;
