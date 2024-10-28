@@ -1541,9 +1541,11 @@ void Bcp::MenuCanales()
 			auto callback = [&](int seleccion) {
 				Nodo<Canal*>* canal = canales->getByPosition(seleccion);
 				if (canal != nullptr)
+				{
 					canal->data->activar();
+					editar<ListaDoble<Canal*>*, Canal>(canal->data, canales);
+				}
 
-				editar<ListaDoble<Canal*>*, Canal>(canal->data, canales);
 				return false;
 				};
 			crearMenu(opcionesCanal, callback);
@@ -1559,9 +1561,11 @@ void Bcp::MenuCanales()
 			auto callback = [&](int seleccion) {
 				Nodo<Canal*>* canal = canales->getByPosition(seleccion);
 				if (canal != nullptr)
+				{
 					canal->data->desactivar();
+					editar<ListaDoble<Canal*>*, Canal>(canal->data, canales);
+				}
 
-				editar<ListaDoble<Canal*>*, Canal>(canal->data, canales);
 				return false;
 				};
 			crearMenu(opcionesCanal, callback);
@@ -1739,9 +1743,10 @@ inline void Bcp::MenuAdmin()
 			MenuCanales();
 			break;
 		case 6:
-			return true;
+			return false;
 			break;
 		};
+		return true;
 	};
 	crearMenu(opciones, callback);
 }
@@ -2336,7 +2341,6 @@ void Bcp::MenuSedes()
 		"Listar todas las sedes",
 		"Listar las sedes por ciudad",
 		"Listar las sedes por departamento",
-		"Listar las sedes por distrito",
 		"Agregar una sede",
 		"Editar una sede",
 		"Eliminar una sede",
@@ -2347,10 +2351,9 @@ void Bcp::MenuSedes()
 	};
 	string ciudad = "";
 	string departamento = "";
-	string distrito = "";
 	int id;
 
-	auto callback = [this, &ciudad, &departamento, &id, &distrito](int seleccion) {
+	auto callback = [this, &ciudad, &departamento, &id](int seleccion) {
 		switch (seleccion) {
 		case 0:
 			sedes->printPaginado();
@@ -2428,7 +2431,6 @@ void Bcp::MenuSedes()
 						return false;
 						};
 					crearMenu(campos, menuOpcionesEdditables);
-
 				}
 				return false;
 				};
@@ -2498,11 +2500,10 @@ void Bcp::MenuSedes()
 		case 9:
 			return false;
 			break;
+		}
 			return true;
 		};
 
-
-		};
 	crearMenu(opciones, callback);
 }
 
