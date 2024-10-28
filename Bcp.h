@@ -1739,9 +1739,8 @@ inline void Bcp::MenuAdmin()
 			MenuCanales();
 			break;
 		case 6:
-			return false;
-			break;
 			return true;
+			break;
 		};
 	};
 	crearMenu(opciones, callback);
@@ -2322,48 +2321,6 @@ void Bcp::MenuTarjetas()
 			break;
 		}
 		case 5:
-			return false;
-			break;
-		}
-		return true;
-	};
-
-	crearMenu(opciones, callback);
-}
-
-void Bcp::MenuAdmin()
-{
-	vector<string> opciones = {
-		"Lista de Clientes",
-		"Lista de Cuentas Bancarias",
-		"Lista de Tarjetas",
-		"Lista de Operaciones",
-		"Lista de Canales",
-		"Lista de Sedes",
-		"Salir"
-	};
-
-	auto callback = [this](int seleccion) {
-		switch (seleccion) {
-		case 0:
-			MenuClientes();
-			break;
-		case 1:
-			MenuCuentas();
-			break;
-		case 2:
-			MenuTarjetas();
-			break;
-		case 3:
-			MenuOperaciones();
-			break;
-		case 4:
-			MenuCanales();
-			break;
-		case 5:
-			MenuSedes();
-			break;
-		case 6:
 			return false;
 			break;
 		}
