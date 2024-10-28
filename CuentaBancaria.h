@@ -167,15 +167,14 @@ void CuentaBancaria::transferir(CuentaBancaria* cuenta, double cantidad)
 
 void CuentaBancaria::imprimirOperaciones()
 {
-	Nodo<Operacion*>* temp = operaciones->head;
-	while (temp != nullptr)
-	{
-		temp->data->print();
-		temp = temp->next;
-	}
+
 	if (operaciones->head == nullptr)
 	{
 		cout << "No hay operaciones" << endl;
+	}
+	else 
+	{
+		cout << "Tiene " << operaciones->getSize() << " operaciones." << endl;
 	}
 }
 
@@ -244,7 +243,15 @@ void CuentaBancaria::loadOperaciones()
 	{
 		if (temp->data->getIdCuentaBancariaOrigen() == id || temp->data->getIdCuentaBancariaDestino() == id)
 		{
-			operaciones->push_back(temp->data);
+			Nodo<Operacion*>* temp2 = operaciones->search(temp->data->getId());
+			if (operaciones->getSize() != 0 && temp2 != nullptr)
+			{
+				operaciones->update(temp->data);
+			}
+			else
+			{
+				operaciones->push_back(temp->data);
+			}
 		}
 		temp = temp->next;
 	}

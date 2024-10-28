@@ -477,7 +477,6 @@ void Bcp::MenuBCP()
 
 			Console::Clear();
 			if (ClienteEncontrado->data->getEmail() == "admin@bcp.pe") {
-				//AGREGAR MENU DE ADMINISTRACION / GESTION DE TODAS LAS TABLAS/LISTAS
 				MenuAdmin();
 				return true;
 				break;
@@ -887,8 +886,13 @@ void Bcp::MenuSoloCuentaBancaria(CuentaBancaria* CuentaB)
 		{
 			Console::Clear();
 			LogoBCP(18, 1);
-			gotoxy(0, 12); CuentaB->getOperaciones()->print();
-			system("pause");
+			if (CuentaB->getOperaciones()->getSize() == 0) {
+				gotoxy(0, 12); cout << LBLUE << "No hay operaciones" << RESET;
+			}
+			else {
+				gotoxy(0, 12); CuentaB->getOperaciones()->printPaginado();
+			}
+			gotoxy(40, 15); system("pause");
 			Console::Clear();
 			break;
 		}
@@ -899,7 +903,7 @@ void Bcp::MenuSoloCuentaBancaria(CuentaBancaria* CuentaB)
 			if (CuentaB->getTarjeta() != nullptr)
 			{
 				gotoxy(40, 12); cout << "Usted ya tiene una tarjeta asociada a la cuenta";
-				system("pause");
+				gotoxy(40, 13); system("pause");
 			}
 			else
 			{
@@ -953,8 +957,13 @@ void Bcp::MenuSoloCuentaBancaria(CuentaBancaria* CuentaB)
 			MenuElegirCanalOSede(CuentaB);
 			break;
 		case 7:
-			colaOperaciones->print();
-			system("pause");
+			if (colaOperaciones->getSize() == 0) {
+				gotoxy(0, 12); cout << LBLUE << "No hay operaciones" << RESET;
+				gotoxy(0, 13); system("pause");
+			}
+			else {
+				gotoxy(0, 12); colaOperaciones->printPaginado();
+			}
 			break;
 		case 8:
 			Console::Clear();
@@ -981,25 +990,38 @@ inline void Bcp::MenuElegirCanalOSede(CuentaBancaria* cuenta)
 		case 0:
 		{
 			ListaDoble<Sede*>* sedesDisponibles = buscarPorCantidadAleatorio<ListaDoble<Sede*>*, Sede>(sedes, sedes->getSize() < 5 ? sedes->getSize() : 5);
-			vector<string> opcionesSedes;
-			for (int i = 0; i < sedesDisponibles->getSize(); i++)
-			{
-				opcionesSedes.push_back(sedesDisponibles->getByPosition(i)->data->getNombre());
-			}
-			auto callback = [sedesDisponibles, &cuenta, this](int seleccion) {
-				Nodo<Sede*>* sede = sedesDisponibles->getByPosition(seleccion);
-				if (sede != nullptr)
-					MenuOperacionPorSede(sede->data, cuenta);
-				return false;
-				};
+			if (sedesDisponibles->head != nullptr) {
+				vector<string> opcionesSedes;
+				for (int i = 0; i < sedesDisponibles->getSize(); i++)
+				{
+					opcionesSedes.push_back(sedesDisponibles->getByPosition(i)->data->getNombre());
+				}
+				auto callback = [sedesDisponibles, &cuenta, this](int seleccion) {
+					Nodo<Sede*>* sede = sedesDisponibles->getByPosition(seleccion);
+					if (sede != nullptr)
+						MenuOperacionPorSede(sede->data, cuenta);
+					return false;
+					};
 
-			crearMenu(opcionesSedes, callback);
+				crearMenu(opcionesSedes, callback);
+			}
+			else
+			{
+				gotoxy(45, 22); cout << "No hay sedes disponibles" << endl;
+				gotoxy(45, 23); cout << RED << system("pause") << RESET;
+			}
+
 			break;
 		}
 		case 1:
 		{
 			ListaDoble<Canal*>* canalesSinSedeDisponibles = buscarCanalesSinSede();
-
+			if (canalesSinSedeDisponibles->head == nullptr)
+			{
+				gotoxy(45, 22); cout << "No hay canales disponibles" << endl;
+				gotoxy(45, 23); cout << RED << system("pause") << RESET;
+				break;
+			}
 			vector<string> opcionesCanales;
 			for (int i = 0; i < canalesSinSedeDisponibles->getSize(); i++)
 			{
@@ -1043,35 +1065,49 @@ inline void Bcp::MenuOperacionPorSede(Sede* sede, CuentaBancaria* cuenta)
 		case 1:
 		{
 			ListaDoble<Canal*>* ventanillas = sede->buscarCanalesPorTipo(VENTANILLA);
-			vector<string> opcionesVentanillas;
-			for (int i = 0; i < ventanillas->getSize(); i++)
-			{
-				opcionesVentanillas.push_back(ventanillas->getByPosition(i)->data->getNombre());
+			if (ventanillas->head != nullptr) {
+				vector<string> opcionesVentanillas;
+				for (int i = 0; i < ventanillas->getSize(); i++)
+				{
+					opcionesVentanillas.push_back(ventanillas->getByPosition(i)->data->getNombre());
+				}
+				auto callback1 = [&cuenta, ventanillas, this](int seleccion1) {
+					Nodo<Canal*>* canal = ventanillas->getByPosition(seleccion1);
+					if (canal != nullptr)
+						MenuOperacionPorCanal(canal->data, cuenta);
+					return false;
+					};
+				crearMenu(opcionesVentanillas, callback1);
 			}
-			auto callback1 = [&cuenta, ventanillas, this](int seleccion1) {
-				Nodo<Canal*>* canal = ventanillas->getByPosition(seleccion1);
-				if (canal != nullptr)
-					MenuOperacionPorCanal(canal->data, cuenta);
-				return false;
-				};
-			crearMenu(opcionesVentanillas, callback1);
+			else {
+				gotoxy(45, 22); cout << "No hay ventanillas disponibles" << endl;
+				gotoxy(45, 23); cout << RED << system("pause") << RESET;
+			}
+
 			break;
 		}
 		case 2:
 		{
 			ListaDoble<Canal*>* cajeros = sede->buscarCanalesPorTipo(CAJERO);
-			vector<string> opcionesCajeros;
-			for (int i = 0; i < cajeros->getSize(); i++)
-			{
-				opcionesCajeros.push_back(cajeros->getByPosition(i)->data->getNombre());
+			if (cajeros->head != nullptr) {
+				vector<string> opcionesCajeros;
+				for (int i = 0; i < cajeros->getSize(); i++)
+				{
+					opcionesCajeros.push_back(cajeros->getByPosition(i)->data->getNombre());
+				}
+				auto callback2 = [&cuenta, cajeros, this](int seleccion2) {
+					Nodo<Canal*>* canal = cajeros->getByPosition(seleccion2);
+					if (canal != nullptr)
+						MenuOperacionPorCanal(canal->data, cuenta);
+					return false;
+					};
+				crearMenu(opcionesCajeros, callback2);
 			}
-			auto callback2 = [&cuenta, cajeros, this](int seleccion2) {
-				Nodo<Canal*>* canal = cajeros->getByPosition(seleccion2);
-				if (canal != nullptr)
-					MenuOperacionPorCanal(canal->data, cuenta);
-				return false;
-				};
-			crearMenu(opcionesCajeros, callback2);
+			else {
+				gotoxy(45, 22); cout << "No hay cajeros disponibles" << endl;
+				gotoxy(45, 23); cout << RED << system("pause") << RESET;
+			}
+
 			break;
 		}
 		case 3:
@@ -1090,86 +1126,461 @@ inline void Bcp::MenuOperacionPorCanal(Canal* canal, CuentaBancaria* cuenta)
 	string cuentaDestino;
 	string cuentaOrigen = cuenta->getNumeroCuenta();
 	Operacion* operacion = new Operacion();
-	vector<string> opciones = {
-		"Ver informacion del canal",
-		"Transferir",
-		"Depositar",
-		"Retirar",
-		"Salir"
-	};
-	auto callback = [canal, &monto, &SN, &cuentaDestino, &cuentaOrigen, &operacion, cuenta, this](int seleccion) {
-		switch (seleccion) {
-		case 0:
-			canal->print();
-			gotoxy(45, 22); cout << RED << system("pause") << RESET;
-			break;
-		case 1:
-			cout << "Su SALDO actual es: " << cuenta->getSaldo() << endl << endl;
 
-			cout << "Transferir..." << endl;
+	vector<string> opciones;
+	if(canal->isActivo()) {
+		opciones = {
+			"Ver informacion del canal",
+			"Transferir",
+			"Depositar",
+			"Retirar",
+			"Salir"
+		};
+		auto menuActivo = [canal, &monto, &SN, &cuentaDestino, &cuentaOrigen, &operacion, cuenta, this](int seleccion) {
+			switch (seleccion) {
+			case 0:
+				canal->print();
+				gotoxy(45, 22); cout << RED << system("pause") << RESET;
+				break;
+			case 1:
+				cout << "Su SALDO actual es: " << cuenta->getSaldo() << endl << endl;
 
-			cout << "Ingrese el monto a transferir: ";
-			cin >> monto;
+				cout << "Transferir..." << endl;
 
-			cout << "Ingrese la cuenta de destino: ";
-			cin >> cuentaDestino;
+				cout << "Ingrese el monto a transferir: ";
+				cin >> monto;
 
-			operacion = cuenta->crearTransferencia(getLastId(colaOperaciones), cuentaOrigen, cuentaDestino, monto, canal->getId(), canal->getIdSede());
-			if (operacion != nullptr) colaOperaciones->encolar(operacion);
-
-			system("pause");
-			break;
-		case 2:
-			cout << "Depositar..." << endl;
-
-			cout << "Ingrese el monto a depositar: ";
-
-			cin >> monto;
-
-			cout << "Desea depositar a esta misma cuenta? (s: Si , n: A otra cuenta)";
-
-			cin >> SN;
-			if (SN == 's' || SN == 'S') {
-				operacion = cuenta->crearDeposito(getLastId(colaOperaciones), cuentaOrigen, monto, canal->getId(), canal->getIdSede());
-				if (operacion != nullptr) colaOperaciones->encolar(operacion);
-			}
-			else {
 				cout << "Ingrese la cuenta de destino: ";
-
 				cin >> cuentaDestino;
 
-				operacion = cuenta->crearDeposito(getLastId(colaOperaciones), cuentaDestino, monto, canal->getId(), canal->getIdSede());
+				operacion = cuenta->crearTransferencia(getLastId(colaOperaciones), cuentaOrigen, cuentaDestino, monto, canal->getId(), canal->getIdSede());
 				if (operacion != nullptr) colaOperaciones->encolar(operacion);
+
+				system("pause");
+				break;
+			case 2:
+				cout << "Depositar..." << endl;
+
+				cout << "Ingrese el monto a depositar: ";
+
+				cin >> monto;
+
+				cout << "Desea depositar a esta misma cuenta? (s: Si , n: A otra cuenta)";
+
+				cin >> SN;
+				if (SN == 's' || SN == 'S') {
+					operacion = cuenta->crearDeposito(getLastId(colaOperaciones), cuentaOrigen, monto, canal->getId(), canal->getIdSede());
+					if (operacion != nullptr) colaOperaciones->encolar(operacion);
+				}
+				else {
+					cout << "Ingrese la cuenta de destino: ";
+
+					cin >> cuentaDestino;
+
+					operacion = cuenta->crearDeposito(getLastId(colaOperaciones), cuentaDestino, monto, canal->getId(), canal->getIdSede());
+					if (operacion != nullptr) colaOperaciones->encolar(operacion);
+				}
+				system("pause");
+				break;
+			case 3:
+				cout << "Su SALDO actual es: " << cuenta->getSaldo() << endl << endl;
+
+				cout << "Retirar..." << endl;
+
+				cout << "Ingrese el monto a retirar: ";
+
+				cin >> monto;
+
+				operacion = cuenta->crearRetiro(getLastId(colaOperaciones), cuentaOrigen, monto, canal->getId(), canal->getIdSede());
+				if (operacion != nullptr) encolar<Cola<Operacion*>*, Operacion>(operacion, colaOperaciones);
+				system("pause");
+				break;
+			case 4:
+				return false;
+				break;
+			};
+
+			//desencolar luego de cada encolamiento
+			Operacion* opDesencolada = desencolar<Cola<Operacion*>*, Operacion>(colaOperaciones);
+			if (opDesencolada != nullptr) {
+				ejecutarOperacion(opDesencolada);
+				opDesencolada->setId(getLastId(operaciones));
+				agregar(opDesencolada, operaciones);
 			}
-			system("pause");
+			return true;
+			};
+
+		crearMenu(opciones, menuActivo);
+	} else {
+		opciones = {
+			"Ver informacion del canal",
+			"Este canal est� INACTIVO - Salir"
+		};
+		auto menuInactivo = [canal, &monto, &SN, &cuentaDestino, &cuentaOrigen, &operacion, cuenta, this](int seleccion) {
+			switch (seleccion) {
+			case 0:
+				canal->print();
+				gotoxy(45, 22); cout << RED << system("pause") << RESET;
+				break;
+			case 1:
+				return false;
+				break;
+			};
+
+			//desencolar luego de cada encolamiento
+			Operacion* opDesencolada = desencolar<Cola<Operacion*>*, Operacion>(colaOperaciones);
+			if (opDesencolada != nullptr) {
+				ejecutarOperacion(opDesencolada);
+				opDesencolada->setId(getLastId(operaciones));
+				agregar(opDesencolada, operaciones);
+			}
+			return true;
+			};
+
+		crearMenu(opciones, menuInactivo);
+	};
+
+}
+
+void Bcp::MenuCanales()
+{
+	vector<string> opciones = {
+		"Listar todos los canales",
+		"Listar los canales por tipo",
+		"Listar los canales por sede",
+		"Agregar un canal",
+		"Editar un canal",
+		"Eliminar un canal",
+		"Activar un canal",
+		"Desactivar un canal",
+		"Ordenar por nombre",
+		"Ordenar por estado",
+		"Salir"
+	};
+
+	auto callback = [&](int seleccion) {
+		switch (seleccion) {
+		case 0: //Listar todos los canales
+			canales->printPaginado();
 			break;
-		case 3:
-			cout << "Su SALDO actual es: " << cuenta->getSaldo() << endl << endl;
+		case 1: //Listar los canales por tipo
+		{
+			ETipoDeCanal tipo;
+			Sede* sede;
+			cout << "Elija el tipo: ";
 
-			cout << "Retirar..." << endl;
+			vector<string> tipos = { "Ventanilla", "Agente", "Web", "App", "Yape", "Cajero" };
 
-			cout << "Ingrese el monto a retirar: ";
+			auto callback = [&](int seleccion) {
+				switch (seleccion) {
+				case 0:
+					tipo = VENTANILLA;
+					break;
+				case 1:
+					tipo = AGENTE;
+					break;
+				case 2:
+					tipo = WEB;
+					break;
+				case 3:
+					tipo = APP;
+					break;
+				case 4:
+					tipo = YAPE;
+					break;
+				case 5:
+					tipo = CAJERO;
+					break;
+				}
+				return false;
+				};
 
-			cin >> monto;
+			crearMenu(tipos, callback);
 
-			operacion = cuenta->crearRetiro(getLastId(colaOperaciones), cuentaOrigen, monto, canal->getId(), canal->getIdSede());
-			if (operacion != nullptr) encolar<Cola<Operacion*>*, Operacion>(operacion, colaOperaciones);
-			system("pause");
+			//callback paa buscar por valor
+
+			auto searchByValue = [this, &tipo](Canal* canal) {
+				return canal->getTipoDeCanal() == tipo;
+				};
+			ListaDoble<Canal*>* temp = canales->searchMultipleByValue(searchByValue);
+			if (temp != nullptr) {
+				if (temp->head != nullptr) temp->printPaginado(5);
+			}
+			else {
+				cout << "No se encontraron canales con ese tipo" << endl;
+				system("pause");
+			}
+			delete temp;
 			break;
-		case 4:
+		}
+		case 2: //Listar los canales por sede
+		{
+			ETipoDeCanal tipo;
+			Sede* sede;
+			cout << "Elija la sede: ";
+			vector<string> opcionesSedes;
+			for (int i = 0; i < sedes->getSize(); i++)
+			{
+				opcionesSedes.push_back(sedes->getFormattedByPos([&](Sede* sede) { return to_string(sede->getId()) + sede->getNombre(); }, i));
+			}
+			auto callback = [&](int seleccion) {
+				Nodo<Sede*>* TempSede = sedes->getByPosition(seleccion);
+				if (TempSede != nullptr)
+					sede = TempSede->data;
+				return false;
+				};
+			crearMenu(opcionesSedes, callback);
+
+			auto searchByValue = [this, &sede](Canal* canal) {
+				return canal->getIdSede() == sede->getId();
+				};
+			ListaDoble<Canal*>* temp = canales->searchMultipleByValue(searchByValue);
+			if (temp != nullptr) {
+				if (temp->head != nullptr) temp->printPaginado(5);
+			}
+			else {
+				cout << "No se encontraron canales con esa sede" << endl;
+				system("pause");
+			}
+			delete temp;
+			break;
+		}
+		case 3: //Agregar un canal
+		{
+			string nombre;
+			ETipoDeCanal tipo = OTROCANAL;
+			Sede* sede;
+
+			vector<string> campos = { "Nombre" };
+			auto callback = [&](vector<string> valores) {
+				nombre = valores[0];
+				return false;
+				};
+			crearFormulario(campos, callback);
+			
+			cout << "Elija el tipo: ";
+
+			vector<string> tipos = { "Ventanilla", "Agente", "Web", "App", "Yape", "Cajero" };
+
+			auto callback1 = [&](int seleccion) {
+				switch (seleccion) {
+				case 0:
+					tipo = VENTANILLA;
+					break;
+				case 1:
+					tipo = AGENTE;
+					break;
+				case 2:
+					tipo = WEB;
+					break;
+				case 3:
+					tipo = APP;
+					break;
+				case 4:
+					tipo = YAPE;
+					break;
+				case 5:
+					tipo = CAJERO;
+					break;
+				}
+				return false;
+				};
+
+			crearMenu(tipos, callback1);
+
+			if (tipo != VENTANILLA && tipo != CAJERO) {
+				cout << "Elija la sede: ";
+				vector<string> opcionesSedes;
+				for (int i = 0; i < sedes->getSize(); i++)
+				{
+					opcionesSedes.push_back(sedes->getFormattedByPos([&](Sede* sede) { return to_string(sede->getId()) + sede->getNombre(); }, i));
+				}
+				auto callback2 = [&](int seleccion) {
+					Nodo<Sede*>* TempSede = sedes->getByPosition(seleccion);
+					if (TempSede != nullptr)
+						sede = TempSede->data;
+					return false;
+					};
+				crearMenu(opcionesSedes, callback2);
+			}
+
+			agregar<ListaDoble<Canal*>*, Canal>(new Canal(getLastId(canales), nombre, tipo, sede != nullptr ? sede->getId() : 0), canales);
+			break;
+		}
+		case 4: //Editar un canal
+		{
+			string nombre;
+			ETipoDeCanal tipo = OTROCANAL;
+			Sede* sede;
+			vector<string> opcionesCanal;
+			for (int i = 0; i < canales->getSize(); i++)
+			{
+				opcionesCanal.push_back(canales->getFormattedByPos([&](Canal* sede) { return to_string(sede->getId()) + sede->getNombre(); }, i));
+			}
+			auto callback = [&](int seleccion) {
+				Nodo<Canal*>* canal = canales->getByPosition(seleccion);
+				if (canal != nullptr)
+				{
+					vector<string> campos = { "Nombre", "Tipo de Canal", "Sede", "Quitar de la sede"};
+					auto menuOpcionesEdditables = [&](int seleccion) {
+
+						switch (seleccion) {
+						case 0:
+						{
+							vector<string> campoEditable;
+							campoEditable.push_back(campos[seleccion]);
+							auto callback = [&](vector<string> valores) {
+								canal->data->setNombre(valores[0]);
+								return false;
+								};
+							crearFormulario(campoEditable, callback);
+							break;
+						}
+						case 1:
+						{
+							cout << "Elija el tipo: ";
+
+							vector<string> tipos = { "Ventanilla", "Agente", "Web", "App", "Yape", "Cajero" };
+
+							auto callback1 = [&](int seleccion) {
+								switch (seleccion) {
+								case 0:
+									canal->data->setTipoDeCanal(VENTANILLA);
+									break;
+								case 1:
+									canal->data->setTipoDeCanal(AGENTE);
+									break;
+								case 2:
+									canal->data->setTipoDeCanal(WEB);
+									break;
+								case 3:
+									canal->data->setTipoDeCanal(APP);
+									break;
+								case 4:
+									canal->data->setTipoDeCanal(YAPE);
+									break;
+								case 5:
+									canal->data->setTipoDeCanal(CAJERO);
+									break;
+								}
+								return false;
+								};
+
+							crearMenu(tipos, callback1);
+							break;
+						}
+						case 2:
+						{
+							if (tipo != VENTANILLA && tipo != CAJERO) {
+								cout << "Elija la sede: ";
+								vector<string> opcionesSedes;
+								for (int i = 0; i < sedes->getSize(); i++)
+								{
+									opcionesSedes.push_back(sedes->getFormattedByPos([&](Sede* sede) { return to_string(sede->getId()) + sede->getNombre(); }, i));
+								}
+								auto callback2 = [&](int seleccion) {
+									Nodo<Sede*>* TempSede = sedes->getByPosition(seleccion);
+									if (TempSede != nullptr)
+										canal->data->setIdSede(TempSede->data->getId());
+									return false;
+									};
+								crearMenu(opcionesSedes, callback2);
+							}
+							else {
+								cout << "Este canal no puede tener sede" << endl;
+								system("pause");
+							}
+							break;
+						}
+						case 3:
+							if (tipo != VENTANILLA && tipo != CAJERO) canal->data->setIdSede(0);
+							else {
+								cout << "Este canal no tiene sede" << endl;
+								system("pause");
+							}
+							break;
+						}
+						editar<ListaDoble<Canal*>*, Canal>(canal->data, canales);
+						cout << "Canal editado correctamente" << endl;
+						system("pause");
+
+
+						return false;
+						};
+					crearMenu(campos, menuOpcionesEdditables);
+
+				}
+				
+				return false;
+				};
+			crearMenu(opcionesCanal, callback);
+			break;
+		}
+		case 5: //Eliminar un canal
+		{
+			vector<string> opcionesCanal;
+			for (int i = 0; i < canales->getSize(); i++)
+			{
+				opcionesCanal.push_back(canales->getFormattedByPos([&](Canal* sede) { return to_string(sede->getId()) + sede->getNombre(); }, i));
+			}
+			auto callback = [&](int seleccion) {
+				Nodo<Canal*>* canal = canales->getByPosition(seleccion);
+				if (canal != nullptr)
+					eliminar<ListaDoble<Canal*>*, Canal>(canal->data, canales);
+				return false;
+				};
+			break;
+		}
+		case 6: //Activar un canal
+		{
+			vector<string> opcionesCanal;
+			for (int i = 0; i < canales->getSize(); i++)
+			{
+				opcionesCanal.push_back(canales->getFormattedByPos([&](Canal* sede) { return to_string(sede->getId()) + sede->getNombre(); }, i));
+			}
+			auto callback = [&](int seleccion) {
+				Nodo<Canal*>* canal = canales->getByPosition(seleccion);
+				if (canal != nullptr)
+					canal->data->activar();
+
+				editar<ListaDoble<Canal*>*, Canal>(canal->data, canales);
+				return false;
+				};
+			crearMenu(opcionesCanal, callback);
+			break;
+		}
+		case 7: //Desactivar un canal
+		{
+			vector<string> opcionesCanal;
+			for (int i = 0; i < canales->getSize(); i++)
+			{
+				opcionesCanal.push_back(canales->getFormattedByPos([&](Canal* sede) { return to_string(sede->getId()) + sede->getNombre(); }, i));
+			}
+			auto callback = [&](int seleccion) {
+				Nodo<Canal*>* canal = canales->getByPosition(seleccion);
+				if (canal != nullptr)
+					canal->data->desactivar();
+
+				editar<ListaDoble<Canal*>*, Canal>(canal->data, canales);
+				return false;
+				};
+			crearMenu(opcionesCanal, callback);
+			break;
+		}
+		case 8: //Ordenar por nombre
+			Canal::ordenarPorNombre<ListaDoble<Canal*>*>(canales, true);
+			canales->printPaginado(5);
+			break;
+		case 9: //Ordenar por estado
+			Canal::ordenarPorEstado<ListaDoble<Canal*>*>(canales, true);
+			canales->printPaginado(5);
+			break;
+		case 10:
 			return false;
 			break;
-		};
-
-		//desencolar luego de cada encolamiento
-		Operacion* opDesencolada = desencolar<Cola<Operacion*>*, Operacion>(colaOperaciones);
-		if (opDesencolada != nullptr) {
-			ejecutarOperacion(opDesencolada);
-			opDesencolada->setId(getLastId(operaciones));
-			agregar(opDesencolada, operaciones);
 		}
 		return true;
-	};
+		};
 
 	crearMenu(opciones, callback);
 }
@@ -1229,7 +1640,7 @@ inline void Bcp::MenuOperaciones()
 				};
 			ListaDoble<Operacion*>* temp = operaciones->searchMultipleByValue(searchByValue);
 			if (temp != nullptr) {
-				if(temp->head != nullptr) temp->printPaginaSoloIda(5);
+				if(temp->head != nullptr) temp->printPaginado(5);
 			}
 			else {
 				cout << "No se encontraron operaciones con ese tipo" << endl;
@@ -1267,7 +1678,7 @@ inline void Bcp::MenuOperaciones()
 				};
 			ListaDoble<Operacion*>* temp = operaciones->searchMultipleByValue(searchByValue);
 			if (temp != nullptr) {
-				if (temp->head != nullptr) temp->printPaginaSoloIda(5);
+				if (temp->head != nullptr) temp->printPaginado(5);
 			} else {
 				cout << "No se encontraron operaciones con ese estado" << endl;
 			}
@@ -1277,11 +1688,11 @@ inline void Bcp::MenuOperaciones()
 		}
 		case 3:
 			Operacion::ordenarPorFecha<ListaDoble<Operacion*>*>(operaciones, true);
-			operaciones->printPaginaSoloIda(5);
+			operaciones->printPaginado(5);
 			break;
 		case 4:
 			Operacion::ordenarPorMonto<ListaDoble<Operacion*>*>(operaciones, true);
-			operaciones->printPaginaSoloIda(5);
+			operaciones->printPaginado(5);
 			break;
 		case 5:
 			return false;
@@ -1985,21 +2396,21 @@ void Bcp::MenuSedes()
 	auto callback = [this, &ciudad, &departamento, &id, &distrito](int seleccion) {
 		switch (seleccion) {
 		case 0:
-			sedes->printPaginaSoloIda();
+			sedes->printPaginado();
 			system("pause");
 			break;
 		case 1:
 			cout << "Ingrese nombre de la ciudad: ";
 
 			cin >> ciudad;
-			sedes->searchMultipleByValue([ciudad](Sede* sede) { return sede->getCiudad() == ciudad; })->printPaginaSoloIda(10);
+			sedes->searchMultipleByValue([ciudad](Sede* sede) { return sede->getCiudad() == ciudad; })->printPaginado(10);
 			break;
 
 		case 2:
 			cout << "Ingrese el departamento: ";
 
 			cin >> departamento;
-			sedes->searchMultipleByValue([departamento](Sede* sede) { return sede->getDepartamento() == departamento; })->printPaginaSoloIda(10);
+			sedes->searchMultipleByValue([departamento](Sede* sede) { return sede->getDepartamento() == departamento; })->printPaginado(10);
 			break;
 
 		case 3:
@@ -2096,6 +2507,8 @@ void Bcp::MenuSedes()
 				Nodo<Sede*>* sede = sedes->getByPosition(seleccion);
 				if (sede != nullptr)
 					sede->data->activar();
+
+				editar<ListaDoble<Sede*>*, Sede>(sede->data, sedes);
 				return false;
 				};
 			crearMenu(opcionesSedes, callback);
@@ -2113,6 +2526,8 @@ void Bcp::MenuSedes()
 				Nodo<Sede*>* sede = sedes->getByPosition(seleccion);
 				if (sede != nullptr)
 					sede->data->desactivar();
+
+				editar<ListaDoble<Sede*>*, Sede>(sede->data, sedes);
 				return false;
 				};
 			crearMenu(opcionesSedes, callback);
@@ -2121,7 +2536,7 @@ void Bcp::MenuSedes()
 		}
 		case 8:
 			Sede::ordenarPorNombre<ListaDoble<Sede*>*>(sedes, true);
-			sedes->printPaginaSoloIda(5);
+			sedes->printPaginado(5);
 			break;
 		case 9:
 			return false;

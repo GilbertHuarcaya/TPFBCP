@@ -286,7 +286,15 @@ inline void Sede::loadCanales()
 	{
 		if (temp->data->getIdSede() == id)
 		{
-			canales->push_back(temp->data);
+			Nodo<Canal*>* temp2 = canales->search(temp->data->getId());
+			if (canales->getSize() != 0 && temp2 != nullptr)
+			{
+				canales->update(temp->data);
+			}
+			else
+			{
+				canales->push_back(temp->data);
+			}
 		}
 		temp = temp->next;
 	}
@@ -313,7 +321,7 @@ inline void Sede::print()
 		cout << "No hay Cajeros ni ventanillas" << endl;
 	}
 	else {
-		canales->print();
+		cout << "Tiene " << canales->getSize() << " canales." << endl;
 	}
 	cout << endl;
 }

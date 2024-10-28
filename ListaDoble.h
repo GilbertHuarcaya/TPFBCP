@@ -243,7 +243,16 @@ public:
 	}
 	void update(T data)
 	{
-		search(data->getId())->data = data;
+		Nodo<T>* nodo = this->search(data->getId());
+		if (nodo != nullptr)
+		{
+			nodo->data = data;
+		}
+		else {
+			cout << "No se encontro el elemento" << endl;
+			data->print();
+			system("pause");
+		}
 	}
 	void clear()
 	{
@@ -421,7 +430,7 @@ public:
 		*headRef = sortedMerge<Compare>(a, b, comp);
 	}
 
-	void printPaginaSoloIda(int cantidadPorPagina = 5) {
+	void printPaginado(int cantidadPorPagina = 5) {
 		int i = 0;
 		bool forward = true; // Para controlar la dirección de la paginación
 

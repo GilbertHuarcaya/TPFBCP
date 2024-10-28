@@ -152,7 +152,7 @@ void Cliente::print() {
 		cout << "No hay cuentas bancarias" << endl;
 	}
 	else {
-		cuentasBancarias->print();
+		cout << "Tiene " << cuentasBancarias->getSize() << " cuentas bancarias." << endl;
 	}
 	cout << endl;
 }
@@ -163,7 +163,8 @@ void Cliente::loadCuentasBancarias() {
 	Nodo<CuentaBancaria*>* temp = todasLasCuentas->head;
 	while (temp != nullptr) {
 		if (temp->data->getIdCliente() == id) {
-			if (cuentasBancarias->getSize() != 0) {
+			Nodo<CuentaBancaria*>* temp2 = cuentasBancarias->search(temp->data->getId());
+			if (cuentasBancarias->getSize() != 0 && temp2 != nullptr) {
 				cuentasBancarias->update(temp->data);
 			}
 			else {
@@ -172,5 +173,4 @@ void Cliente::loadCuentasBancarias() {
 		}
 		temp = temp->next;
 	}
-	
 }
