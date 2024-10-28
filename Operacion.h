@@ -48,6 +48,7 @@ public:
 	double getMonto();
 	int getIdCanal();
 	int getIdSede();
+
 	EstadoOperacion getEstado();
 
 	void setEstado(EstadoOperacion estado);
@@ -61,6 +62,12 @@ public:
 
 	//VALIDATORS
 	void validarOperacion();
+
+	//Ordenamiento avanzado
+	template <typename L>
+	static void ordenarPorFecha(L lista, bool ascendente = true);
+	template <typename L>
+	static void ordenarPorMonto(L lista, bool ascendente = true);
 };
 
 
@@ -110,6 +117,7 @@ TipoOperacion Operacion::getTipo() { return tipo; }
 double Operacion::getMonto() { return monto; }
 int Operacion::getIdCanal() { return idCanal; }
 int Operacion::getIdSede() { return idSede; }
+
 EstadoOperacion Operacion::getEstado() { return estado; }
 
 inline void Operacion::setEstado(EstadoOperacion estado)
@@ -155,18 +163,22 @@ void Operacion::leerLinea(string linea) {
 }
 
 void Operacion::print() {
+
+	string tipoOperacion[] = { "Ninguno", "Transferencia", "Deposito", "Retiro" };
+	string estadoOperacion[] = { "Pendiente", "Realizada", "Rechazada" };
+
 	cout << "ID: " << getId() << endl;
 	cout << "IdClienteOrigen: " << idClienteOrigen << endl;
 	cout << "IdClienteDestino: " << idClienteDestino << endl;
 	cout << "IdCuentaBancariaOrigen: " << idCuentaBancariaOrigen << endl;
 	cout << "IdCuentaBancariaDestino: " << idCuentaBancariaDestino << endl;
-	cout << "Tipo: " << TipoOperacion(tipo) << endl;
-	cout << "Estado: " << EstadoOperacion(estado) << endl;
+	cout << "Tipo: " << tipoOperacion[tipo] << endl;
+	cout << "Estado: " << estadoOperacion[estado] << endl;
 	cout << "Monto: " << monto << endl;
 	if (idCanal != 0 ) cout << "IdCanal: " << idCanal << endl;
 	if (idSede != 0)  cout << "IdSede: " << idSede << endl;
-	cout << "Fecha creacion: " << put_time(localtime(&fechaCreacion), "%Y-%m-%d") << endl;
-	cout << "Fecha edicion: " << put_time(localtime(&fechaEdicion), "%Y-%m-%d") << endl;
+	cout << "Fecha creacion: " << put_time(localtime(&fechaCreacion), "%Y-%m-%d %H:%M") << endl;
+	cout << "Fecha edicion: " << put_time(localtime(&fechaEdicion), "%Y-%m-%d %H:%M") << endl;
 }
 
 void Operacion::validarOperacion() {
@@ -180,5 +192,25 @@ void Operacion::validarOperacion() {
 		estado = Rechazada;
 		return;
 	}
+}
+
+template <typename L>
+inline void Operacion::ordenarPorFecha(L lista, bool ascendente)
+{
+	auto compararFechas = [&](Operacion* a, Operacion* b) {
+		return ascendente ? a->getFechaCreacion() < b->getFechaCreacion() : a->getFechaCreacion() > b->getFechaCreacion();
+	};
+
+	lista->mergeSort(&lista->head, compararFechas);
+}
+
+template <typename L>
+inline void Operacion::ordenarPorMonto(L lista, bool ascendente)
+{
+	auto compararMontos = [&](Operacion* a, Operacion* b) {
+		return ascendente ? a->getMonto() < b->getMonto() : a->getMonto() > b->getMonto();
+		};
+
+	lista->mergeSort(&lista->head, compararMontos);
 }
 

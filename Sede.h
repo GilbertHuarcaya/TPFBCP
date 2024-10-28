@@ -29,6 +29,7 @@ public:
 	Sede();
 	Sede(int id);
 	Sede(int id, string nombre, string direccion, string ciudad, string distrito, string departamento, string telefono, string email);
+	~Sede();
 
 	//GETTERS
 	string getNombre();
@@ -68,6 +69,11 @@ public:
 
 	//PRINT
 	void print();
+
+
+	//SORT
+	template <typename L>
+	static void ordenarPorNombre(L lista, bool ascendente = true);
 	
 };
 
@@ -104,7 +110,16 @@ inline Sede::Sede(int id, string nombre, string direccion, string ciudad, string
 	this->email = email;
 	this->estado = SEDE_INACTIVO;
 }
-;
+inline Sede::~Sede()
+{
+	Nodo<Canal*>* temp = canales->head;
+	while (temp != nullptr)
+	{
+		delete temp->data;
+		temp = temp->next;
+	}
+	delete canales;
+}
 
 string Sede::getNombre() {
 	return nombre;
@@ -279,6 +294,11 @@ inline void Sede::loadCanales()
 
 inline void Sede::print()
 {
+	string estadoStr[] = {
+	"INACTIVO",
+	"ACTIVO"
+	};
+
 	cout << "ID: " << id << endl;
 	cout << "Nombre: " << nombre << endl;
 	cout << "Direccion: " << direccion << endl;
@@ -287,7 +307,7 @@ inline void Sede::print()
 	cout << "Departamento: " << departamento << endl;
 	cout << "Telefono: " << telefono << endl;
 	cout << "Email: " << email << endl;
-	cout << "Estado: " << estado << endl;
+	cout << "Estado: " << estadoStr[estado] << endl;
 	cout << "Cajeros y Ventanillas: " << endl;
 	if (canales->head == nullptr) {
 		cout << "No hay Cajeros ni ventanillas" << endl;
@@ -296,4 +316,14 @@ inline void Sede::print()
 		canales->print();
 	}
 	cout << endl;
+}
+
+template <typename L>
+inline void Sede::ordenarPorNombre(L lista, bool ascendente)
+{
+	auto compararNombres = [&](Sede* a, Sede* b) {
+		return ascendente ? a->getNombre() < b->getNombre() : a->getNombre() > b->getNombre();
+		};
+
+	lista->heapsort(compararNombres);
 }
