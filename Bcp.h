@@ -1279,12 +1279,10 @@ inline void Bcp::MenuOperaciones()
 			Operacion::ordenarPorFecha<ListaDoble<Operacion*>*>(operaciones, true);
 			operaciones->printPaginaSoloIda(5);
 			break;
-		}
 		case 4:
 			Operacion::ordenarPorMonto<ListaDoble<Operacion*>*>(operaciones, true);
 			operaciones->printPaginaSoloIda(5);
 			break;
-		}
 		case 5:
 			return false;
 			break;
@@ -1315,7 +1313,7 @@ inline void Bcp::MenuAdmin()
 			MenuClientes();
 			break;
 		case 1:
-			MenuCuentasBancarias();
+			MenuCuentas();
 			break;
 		case 2:
 			MenuTarjetas();
@@ -1329,14 +1327,12 @@ inline void Bcp::MenuAdmin()
 		case 5:
 			MenuCanales();
 			break;
-		}
 		case 6:
 			return false;
 			break;
-		}
-		return true;
+			return true;
 		};
-
+	};
 	crearMenu(opciones, callback);
 }
 
@@ -1994,21 +1990,21 @@ void Bcp::MenuSedes()
 			break;
 		case 1:
 			cout << "Ingrese nombre de la ciudad: ";
-	
+
 			cin >> ciudad;
 			sedes->searchMultipleByValue([ciudad](Sede* sede) { return sede->getCiudad() == ciudad; })->printPaginaSoloIda(10);
 			break;
-		}
+
 		case 2:
 			cout << "Ingrese el departamento: ";
 
 			cin >> departamento;
 			sedes->searchMultipleByValue([departamento](Sede* sede) { return sede->getDepartamento() == departamento; })->printPaginaSoloIda(10);
 			break;
-		}
+
 		case 3:
 		{
-			vector<string> campos = { "Nombre", "Direccion", "Ciudad", "Distrito", "Departamento", "Telefono", "Email"};
+			vector<string> campos = { "Nombre", "Direccion", "Ciudad", "Distrito", "Departamento", "Telefono", "Email" };
 			auto callback = [this](vector<string> valores) {
 				agregar<ListaDoble<Sede*>*, Sede>(new Sede(getLastId(sedes), valores[0], valores[1], valores[2], valores[3], valores[4], valores[5], valores[6]), sedes);
 				return false;
@@ -2064,7 +2060,7 @@ void Bcp::MenuSedes()
 						return false;
 						};
 					crearMenu(campos, menuOpcionesEdditables);
-					
+
 				}
 				return false;
 				};
@@ -2130,10 +2126,11 @@ void Bcp::MenuSedes()
 		case 9:
 			return false;
 			break;
-		}
-		return true;
+			return true;
 		};
 
+
+		};
 	crearMenu(opciones, callback);
 }
 
