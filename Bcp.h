@@ -1755,8 +1755,8 @@ void Bcp::MenuClientes()
 {
 	vector<string> opciones = {
 		"Listar todos los Clientes",
-		"Listar los clientes por nombre ascendente",
-		"Listar los clientes por apellido ascendente",
+		"Ordenar los clientes por nombre ascendente",
+		"Ordenar los clientes por apellido ascendente",
 		"Agregar un cliente",
 		"Editar los datos de un cliente",
 		"Buscar un Cliente por id",
@@ -1776,9 +1776,23 @@ void Bcp::MenuClientes()
 				system("pause");
 				break;
 			case 1:
+			{
+				function<bool(Cliente*, Cliente*)> comparacion = [&](Cliente* aux1, Cliente* aux2)->bool
+					{
+						return aux1->getNombre() < aux2->getNombre();
+					};
+				QuickSort<Cliente*>(clientes, comparacion, 0, clientes->getSize());
 				break;
+			}
 			case 2:
+			{
+				function<bool(Cliente*, Cliente*)> comparacion = [&](Cliente* aux1, Cliente* aux2)->bool
+					{
+						return aux1->getApellido() < aux2->getApellido();
+					};
+				QuickSort<Cliente*>(clientes, comparacion, 0, clientes->getSize());
 				break;
+			}
 			case 3:
 			{
 				Console::Clear();
@@ -2009,6 +2023,8 @@ void Bcp::MenuCuentas()
 {
 	vector<string> opciones = {
 		"Listar todas las Cuentas Bancarias",
+		"Ordenar las cuentas por saldo ascendente",
+		"Ordenar las cuentas por saldo descendente",
 		"Agregar una Cuenta Bancaria a un Cliente",
 		"Editar los datos de una Cuenta Bancaria",
 		"Buscar una Cuenta Bancaria por id",
@@ -2027,6 +2043,22 @@ void Bcp::MenuCuentas()
 			system("pause");
 			break;
 		case 1:
+		{
+			function<bool(CuentaBancaria*, CuentaBancaria*)> comparacion = [&](CuentaBancaria* aux1, CuentaBancaria* aux2)->bool {
+				return aux1->getSaldo() < aux2->getSaldo();
+				};
+			QuickSort<CuentaBancaria*>(cuentas, comparacion, 0, cuentas->getSize() - 1);
+			break;
+		}
+		case 2:
+		{
+			function<bool(CuentaBancaria*, CuentaBancaria*)> comparacion = [&](CuentaBancaria* aux1, CuentaBancaria* aux2)->bool {
+				return aux1->getSaldo() > aux2->getSaldo();
+				};
+			QuickSort<CuentaBancaria*>(cuentas, comparacion, 0, cuentas->getSize() - 1);
+			break;
+		}
+		case 3:
 		{
 			Console::Clear();
 			LogoBCP(18, 1);
@@ -2085,7 +2117,7 @@ void Bcp::MenuCuentas()
 			Console::Clear();
 			break;
 		}
-		case 2:
+		case 4:
 		{
 			Console::Clear();
 			LogoBCP(18, 1);
@@ -2145,7 +2177,7 @@ void Bcp::MenuCuentas()
 			crearMenu(ops, callback_ops);
 			break;
 		}
-		case 3:
+		case 5:
 		{
 			Console::Clear();
 			LogoBCP(18, 1);
@@ -2162,7 +2194,7 @@ void Bcp::MenuCuentas()
 			buscarPorId<ListaDoble<CuentaBancaria*>*, CuentaBancaria>(id, cuentas)->data->print();
 			break;
 		}
-		case 4:
+		case 6:
 		{
 			Console::Clear();
 			LogoBCP(18, 1);
@@ -2185,7 +2217,7 @@ void Bcp::MenuCuentas()
 			gotoxy(40, 13); system("pause");
 			break;
 		}
-		case 5:
+		case 7:
 			return false;
 			break;
 		}
@@ -2199,6 +2231,9 @@ void Bcp::MenuTarjetas()
 {
 	vector<string> opciones = {
 		"Listar todas las Tarjetas",
+		"Ordenar tarjetas por fecha de vencimiento ascendente",
+		"Ordenar tarjetas por fecha de vencimiento descendente",
+		"Ordenar tarjetas por cvv ascendente",
 		"Agregar una Tarjeta a una Cuenta Bancaria",
 		"Editar CVV de una Tarjeta",
 		"Buscar una Tarjeta por id",
@@ -2219,6 +2254,30 @@ void Bcp::MenuTarjetas()
 			system("pause");
 			break;
 		case 1:
+		{
+			function<bool(Tarjeta*, Tarjeta*)> comparacion = [&](Tarjeta* aux1, Tarjeta* aux2)->bool {
+				return aux1->getFechaVencimiento() > aux2->getFechaVencimiento();
+				};
+			QuickSort<Tarjeta*>(tarjetas, comparacion, 0, tarjetas->getSize() - 1);
+			break;
+		}
+		case 2:
+		{
+			function<bool(Tarjeta*, Tarjeta*)> comparacion = [&](Tarjeta* aux1, Tarjeta* aux2)->bool {
+				return aux1->getFechaVencimiento() < aux2->getFechaVencimiento();
+				};
+			QuickSort<Tarjeta*>(tarjetas, comparacion, 0, tarjetas->getSize() - 1);
+			break;
+		}
+		case 3:
+		{
+			function<bool(Tarjeta*, Tarjeta*)> comparacion = [&](Tarjeta* aux1, Tarjeta* aux2)->bool {
+				return stoi(aux1->getCvv()) < stoi(aux2->getCvv());
+			};
+			QuickSort<Tarjeta*>(tarjetas, comparacion, 0, tarjetas->getSize() - 1);
+			break;
+		}
+		case 4:
 		{
 			Console::Clear();
 			LogoBCP(18, 1);
@@ -2269,7 +2328,7 @@ void Bcp::MenuTarjetas()
 			}
 			break;
 		}
-		case 2:
+		case 5:
 		{
 			Console::Clear();
 			LogoBCP(18, 1);
@@ -2291,7 +2350,7 @@ void Bcp::MenuTarjetas()
 			gotoxy(40, 13); system("pause");
 			break;
 		}
-		case 3:
+		case 6:
 		{
 			Console::Clear();
 			LogoBCP(18, 1);
@@ -2301,7 +2360,7 @@ void Bcp::MenuTarjetas()
 			system("pause");
 			break;
 		}
-		case 4:
+		case 7:
 		{
 			Console::Clear();
 			LogoBCP(18, 1);
@@ -2325,7 +2384,7 @@ void Bcp::MenuTarjetas()
 			gotoxy(40, 13); system("pause");
 			break;
 		}
-		case 5:
+		case 8:
 			return false;
 			break;
 		}
@@ -2590,19 +2649,20 @@ void Bcp::QuickSort(ListaDoble<T>* lista, function<bool(T, T)> comp, int inicio,
 template<class T>
 int Bcp::particion_QS(ListaDoble<T>* lista, function<bool(T, T)> comp, int inicio, int fin)
 {
-	Nodo<T>* pivote = lista->getByPosition(fin - 1);
+	Nodo<T>* pivote = lista->getByPosition(fin);
 	int i = inicio - 1;
-	for (int j = inicio; j < fin; j++)
+	for (int j = inicio; j <= fin - 1; j++)
 	{
 		if (comp(lista->getByPosition(j)->data, pivote->data))
 		{
 			i++;
-			T* aux = lista->getByPosition(j)->data;
+			T aux = lista->getByPosition(j)->data;
 			lista->getByPosition(j)->data = lista->getByPosition(i)->data;
 			lista->getByPosition(i)->data = aux;
 		}
 	}
-	T* aux = lista->getByPosition(fin)->data;
+	T aux = lista->getByPosition(fin)->data;
 	lista->getByPosition(fin)->data = lista->getByPosition(i + 1)->data;
 	lista->getByPosition(i + 1)->data = aux;
+	return i + 1;
 }
