@@ -60,6 +60,7 @@ public:
 	// FILE
 	void leerLinea(string linea) override;
 	string escribirLinea() override;
+	string escribirCabecera() override;
 
 	// PRINT
 	void print();
@@ -185,6 +186,11 @@ string Canal::escribirLinea()
 	stringstream ss;
 	ss << getId() << "," << idSede << "," << nombre << "," << tipoDeCanal << "," << estado;
 	return ss.str();
+}
+
+inline string Canal::escribirCabecera()
+{
+	return "id,idSede,nombre,tipoDeCanal,estado";
 }
 
 void Canal::print()

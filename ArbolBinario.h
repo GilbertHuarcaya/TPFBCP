@@ -119,4 +119,17 @@ public:
 		}
 		else return aux;
 	}
+
+	void printTree(NodoArbol<T>* nodo, int espacio)
+	{
+		if (nodo == nullptr)
+			return;
+		espacio += 10;
+		printTree(nodo->derecha, espacio);
+		cout << endl;
+		for (int i = 10; i < espacio; i++)
+			cout << " ";
+		cout << nodo->dato->getId() << "\n";
+		printTree(nodo->izquierda, espacio);
+	}
 };

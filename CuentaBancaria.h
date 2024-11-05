@@ -57,6 +57,7 @@ public:
 	//FILE
 	string escribirLinea();
 	void leerLinea(string File);
+	string escribirCabecera() override;
 
 	//PRINT
 	void print();
@@ -125,6 +126,11 @@ void CuentaBancaria::leerLinea(string File) {
 	}
 	loadOperaciones();
 	loadTarjeta();
+}
+
+inline string CuentaBancaria::escribirCabecera()
+{
+	return "id,idCliente,password,numeroCuenta,saldo";
 }
 
 void CuentaBancaria::agregarOperacion(Operacion* operacion)

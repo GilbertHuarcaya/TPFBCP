@@ -56,6 +56,7 @@ public:
 	//FILE
 	string escribirLinea();
 	void leerLinea(string linea);
+	string escribirCabecera() override;
 
 	//PRINT
 	void print();
@@ -160,6 +161,11 @@ void Operacion::leerLinea(string linea) {
 		getline(ss, item, ',');
 		fechaEdicion = stoll(item);
 	}
+}
+
+inline string Operacion::escribirCabecera()
+{
+	return "id,idClienteOrigen,idClienteDestino,idCuentaBancariaOrigen,idCuentaBancariaDestino,tipo,estado,monto,idCanal,idSede,fechaCreacion,fechaEdicion";
 }
 
 void Operacion::print() {

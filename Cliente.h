@@ -42,6 +42,7 @@ public:
 	ListaDoble<CuentaBancaria*>* getCuentasBancarias();
 	void actualizarDatos(string nombre, string apellido, string direccion, string telefono, string email, string password);
 	string escribirLinea() override;
+	string escribirCabecera() override;
 	void leerLinea(string linea) override;
 	void print();
 	void loadCuentasBancarias();
@@ -123,6 +124,11 @@ string Cliente::escribirLinea() {
 	return ss.str();
 }
 
+inline string Cliente::escribirCabecera()
+{
+	return "id,nombre,apellido,direccion,telefono,email,password";
+}
+
 void Cliente::leerLinea(string linea) {
 	stringstream ss(linea);
 	string idStr;
@@ -149,10 +155,10 @@ void Cliente::print() {
 	cout << "Password: " << password << endl;
 	cout << "Cuentas Bancarias: " << endl;
 	if (cuentasBancarias->head == nullptr) {
-		cout << "No hay cuentas bancarias" << endl;
+		cout << "	No hay cuentas bancarias" << endl;
 	}
 	else {
-		cout << "Tiene " << cuentasBancarias->getSize() << " cuentas bancarias." << endl;
+		cout << "	Tiene " << cuentasBancarias->getSize() << " cuentas bancarias." << endl;
 	}
 	cout << endl;
 }

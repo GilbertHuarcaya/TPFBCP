@@ -64,6 +64,7 @@ public:
 	//FILE
 	string escribirLinea() override;
 	void leerLinea(string linea) override;
+	string escribirCabecera() override;
 
 	void loadCanales();
 
@@ -275,6 +276,11 @@ void Sede::leerLinea(string linea) {
 	}
 	loadCanales();
 
+}
+
+inline string Sede::escribirCabecera()
+{
+	return "id,nombre,direccion,ciudad,distrito,departamento,telefono,email,estado";
 }
 
 inline void Sede::loadCanales()

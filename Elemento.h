@@ -17,6 +17,7 @@ public:
 	~Elemento();
 	virtual string escribirLinea() = 0;
 	virtual void leerLinea(string linea) = 0;
+	virtual string escribirCabecera() = 0;
 	void setId(int id);
 	int getId();
 	void setFechaCreacion(time_t fechaCreacion);
