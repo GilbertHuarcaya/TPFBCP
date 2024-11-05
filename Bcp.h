@@ -157,14 +157,6 @@ public:
 	template<typename T>
 	void crearFormulario(const vector<string>& campos, T callback);
 
-
-	//Ordenamientos
-	template<class T>
-	void QuickSort(ListaDoble<T>* lista, function<bool(T, T)> comp, int inicio, int fin);
-
-	template<class T>
-	int particion_QS(ListaDoble<T>* lista, function<bool(T, T)> comp, int inicio, int fin);
-
 	//Menu y relacionados
 	void LogoBCP(int x, int y);
 
@@ -1861,7 +1853,7 @@ void Bcp::MenuClientes()
 					{
 						return aux1->getNombre() < aux2->getNombre();
 					};
-				QuickSort<Cliente*>(clientes, comparacion, 0, clientes->getSize());
+				hashClientes->QuickSort(comparacion, 0, hashClientes->getSize() - 1);
 				break;
 			}
 			case 2:
@@ -1870,7 +1862,7 @@ void Bcp::MenuClientes()
 					{
 						return aux1->getApellido() < aux2->getApellido();
 					};
-				QuickSort<Cliente*>(clientes, comparacion, 0, clientes->getSize());
+				hashClientes->QuickSort(comparacion, 0, hashClientes->getSize() - 1);
 				break;
 			}
 			case 3:
@@ -2128,7 +2120,7 @@ void Bcp::MenuCuentas()
 			function<bool(CuentaBancaria*, CuentaBancaria*)> comparacion = [&](CuentaBancaria* aux1, CuentaBancaria* aux2)->bool {
 				return aux1->getSaldo() < aux2->getSaldo();
 				};
-			QuickSort<CuentaBancaria*>(cuentas, comparacion, 0, cuentas->getSize() - 1);
+			cuentas->QuickSort(comparacion, 0, cuentas->getSize() - 1);
 			break;
 		}
 		case 2:
@@ -2136,7 +2128,7 @@ void Bcp::MenuCuentas()
 			function<bool(CuentaBancaria*, CuentaBancaria*)> comparacion = [&](CuentaBancaria* aux1, CuentaBancaria* aux2)->bool {
 				return aux1->getSaldo() > aux2->getSaldo();
 				};
-			QuickSort<CuentaBancaria*>(cuentas, comparacion, 0, cuentas->getSize() - 1);
+			cuentas->QuickSort(comparacion, 0, cuentas->getSize() - 1);
 			break;
 		}
 		case 3:
@@ -2273,6 +2265,7 @@ void Bcp::MenuCuentas()
 				break;
 			}
 			buscarPorId<ListaDoble<CuentaBancaria*>*, CuentaBancaria>(id, cuentas)->data->print();
+			system("pause");
 			break;
 		}
 		case 6:
@@ -2314,7 +2307,7 @@ void Bcp::MenuTarjetas()
 		"Listar todas las Tarjetas",
 		"Ordenar tarjetas por fecha de vencimiento ascendente",
 		"Ordenar tarjetas por fecha de vencimiento descendente",
-		"Ordenar tarjetas por cvv ascendente",
+		"Ordenar tarjetas por fecha de creacion ascendente",
 		"Agregar una Tarjeta a una Cuenta Bancaria",
 		"Editar CVV de una Tarjeta",
 		"Buscar una Tarjeta por id",
@@ -2339,7 +2332,7 @@ void Bcp::MenuTarjetas()
 			function<bool(Tarjeta*, Tarjeta*)> comparacion = [&](Tarjeta* aux1, Tarjeta* aux2)->bool {
 				return aux1->getFechaVencimiento() > aux2->getFechaVencimiento();
 				};
-			QuickSort<Tarjeta*>(tarjetas, comparacion, 0, tarjetas->getSize() - 1);
+			tarjetas->QuickSort(comparacion, 0, tarjetas->getSize() - 1);
 			break;
 		}
 		case 2:
@@ -2347,15 +2340,15 @@ void Bcp::MenuTarjetas()
 			function<bool(Tarjeta*, Tarjeta*)> comparacion = [&](Tarjeta* aux1, Tarjeta* aux2)->bool {
 				return aux1->getFechaVencimiento() < aux2->getFechaVencimiento();
 				};
-			QuickSort<Tarjeta*>(tarjetas, comparacion, 0, tarjetas->getSize() - 1);
+			tarjetas->QuickSort(comparacion, 0, tarjetas->getSize() - 1);
 			break;
 		}
 		case 3:
 		{
 			function<bool(Tarjeta*, Tarjeta*)> comparacion = [&](Tarjeta* aux1, Tarjeta* aux2)->bool {
-				return stoi(aux1->getCvv()) < stoi(aux2->getCvv());
+				return aux1->getFechaCreacion() > aux2->getFechaCreacion();
 			};
-			QuickSort<Tarjeta*>(tarjetas, comparacion, 0, tarjetas->getSize() - 1);
+			tarjetas->QuickSort(comparacion, 0, tarjetas->getSize() - 1);
 			break;
 		}
 		case 4:
@@ -2718,36 +2711,4 @@ void Bcp::crearFormulario(const vector<string>& campos, T callback) {
 
 		continuar = callback(valores);
 	}
-}
-
-template<class T>
-void Bcp::QuickSort(ListaDoble<T>* lista, function<bool(T, T)> comp, int inicio, int fin)
-{
-	if (inicio < fin)
-	{
-		int pivote = particion_QS(lista, comp, inicio, fin);
-		QuickSort<T>(lista, comp, inicio, pivote - 1);
-		QuickSort<T>(lista, comp, pivote + 1, fin);
-	}
-}
-
-template<class T>
-int Bcp::particion_QS(ListaDoble<T>* lista, function<bool(T, T)> comp, int inicio, int fin)
-{
-	Nodo<T>* pivote = lista->getByPosition(fin);
-	int i = inicio - 1;
-	for (int j = inicio; j <= fin - 1; j++)
-	{
-		if (comp(lista->getByPosition(j)->data, pivote->data))
-		{
-			i++;
-			T aux = lista->getByPosition(j)->data;
-			lista->getByPosition(j)->data = lista->getByPosition(i)->data;
-			lista->getByPosition(i)->data = aux;
-		}
-	}
-	T aux = lista->getByPosition(fin)->data;
-	lista->getByPosition(fin)->data = lista->getByPosition(i + 1)->data;
-	lista->getByPosition(i + 1)->data = aux;
-	return i + 1;
 }

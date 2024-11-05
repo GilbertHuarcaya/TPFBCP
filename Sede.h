@@ -324,10 +324,10 @@ inline void Sede::print()
 	cout << "Estado: " << estadoStr[estado] << endl;
 	cout << "Cajeros y Ventanillas: " << endl;
 	if (canales->head == nullptr) {
-		cout << "No hay Cajeros ni ventanillas" << endl;
+		cout << "	No hay Cajeros ni ventanillas" << endl;
 	}
 	else {
-		cout << "Tiene " << canales->getSize() << " canales." << endl;
+		cout << "	Tiene " << canales->getSize() << " canales." << endl;
 	}
 	cout << endl;
 }

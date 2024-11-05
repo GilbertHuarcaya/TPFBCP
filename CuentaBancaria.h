@@ -176,11 +176,11 @@ void CuentaBancaria::imprimirOperaciones()
 
 	if (operaciones->head == nullptr)
 	{
-		cout << "No hay operaciones" << endl;
+		cout << "	No hay operaciones" << endl;
 	}
 	else 
 	{
-		cout << "Tiene " << operaciones->getSize() << " operaciones." << endl;
+		cout << "	Tiene " << operaciones->getSize() << " operaciones." << endl;
 	}
 }
 
@@ -190,13 +190,13 @@ void CuentaBancaria::print()
 	cout << "ID Cliente: " << idCliente << endl;
 	cout << "Password: " << password << endl;
 	cout << "Numero de Cuenta: " << numeroCuenta << endl;
-	cout << "Saldo: " << saldo << endl;
+	cout << "Saldo: " << saldo << endl << endl;
 	cout << "Tarjeta: " << endl;
 	if (tarjeta != nullptr) {
 		tarjeta->print();
 	}
 	else {
-		cout << "No hay tarjeta asociada" << endl;
+		cout << "	No hay tarjeta asociada" << endl << endl;
 	}
 	cout << "Operaciones: " << endl;
 	imprimirOperaciones();

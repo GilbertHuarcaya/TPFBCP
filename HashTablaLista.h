@@ -1,6 +1,7 @@
 #pragma once
-#include <string>
-#include <iostream>
+#include "string"
+#include "iostream"
+#include "functional"
 #include "HashEntidadNodo.h"
 #include "Elemento.h"
 using namespace std;
@@ -89,6 +90,10 @@ public:
 	//heapsort
 	template <typename Compare>
 	void heapsort(Compare comp);
+
+	//quick sort
+	void QuickSort(function<bool(T, T)> comp, int inicio, int fin);
+	int particion_QS(function<bool(T, T)> comp, int inicio, int fin);
 };
 
 template<typename T, typename KEY>
@@ -471,6 +476,8 @@ void HashTablaLista<T, KEY>::print()
 	{
 		temp->data->print();
 		cout << endl;
+		cout << "--------------------------------------------------------------------";
+		cout << endl;
 		temp = temp->next;
 	}
 	cout << endl;
@@ -721,4 +728,32 @@ inline void HashTablaLista<T, KEY>::heapsort(Compare comp)
 		heapSize--;
 		heapify(heapSize, 0, comp);
 	}
+}
+
+template<typename T, typename KEY>
+void HashTablaLista<T, KEY>::QuickSort(function<bool(T, T)> comp, int inicio, int fin)
+{
+	if (inicio < fin)
+	{
+		int pivote = particion_QS(comp, inicio, fin);
+		QuickSort(comp, inicio, pivote - 1);
+		QuickSort(comp, pivote + 1, fin);
+	}
+}
+
+template<typename T, typename KEY>
+int HashTablaLista<T, KEY>::particion_QS(function<bool(T, T)> comp, int inicio, int fin)
+{
+	T pivote = getByPosition(fin)->data;
+	int i = inicio - 1;
+	for (int j = inicio; j < fin; j++)
+	{
+		if (comp(getByPosition(j)->data, pivote))
+		{
+			i++;
+			swap(getByPosition(i)->data, getByPosition(j)->data);
+		}
+	}
+	swap(getByPosition(i + 1)->data, getByPosition(fin)->data);
+	return i + 1;
 }

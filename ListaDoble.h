@@ -1,7 +1,8 @@
 #pragma once
-#include <string>
-#include <iostream>
+#include "string"
+#include "iostream"
 #include "Nodo.h"
+#include "functional"
 using namespace std;
 
 template <class T>
@@ -36,6 +37,7 @@ public:
 	void print();
 	template<typename Format>
 	void printWithFormat(Format formato);
+	void printPaginado(int cantidadPorPagina = 5);
 	template<typename Format>
 	string getFormattedByPos(Format formato, int position);
 	Nodo<T>* search(int id);
@@ -52,12 +54,17 @@ public:
 	Nodo<T>* getFirst();
 	int getSize();
 	int getLastId();
+
+	//Ordenamientos
 	template <typename Compare>
 	void mergeSort(Nodo<T>** headRef, Compare comp);
-	void printPaginado(int cantidadPorPagina = 5);
 
-	template <typename Compare>
+	template<typename Compare>
 	void heapsort(Compare comp);
+
+	void QuickSort(function<bool(T, T)> comp, int inicio, int fin);
+
+	int particion_QS(function<bool(T, T)> comp, int inicio, int fin);
 };
 
 template<class T>
@@ -580,3 +587,37 @@ inline void ListaDoble<T>::heapsort(Compare comp)
 		heapify(heapSize, 0, comp);
 	}
 }
+
+
+template<class T>
+inline void ListaDoble<T>::QuickSort(function<bool(T, T)> comp, int inicio, int fin)
+{
+	if (inicio < fin)
+	{
+		int pivote = particion_QS(comp, inicio, fin);
+		QuickSort(comp, inicio, pivote - 1);
+		QuickSort(comp, pivote + 1, fin);
+	}
+}
+
+template<class T>
+int ListaDoble<T>::particion_QS(function<bool(T, T)> comp, int inicio, int fin)
+{
+	Nodo<T>* pivote = getByPosition(fin - 1);
+	int i = inicio - 1;
+	for (int j = inicio; j < fin; j++)
+	{
+		if (comp(getByPosition(j)->data, pivote->data))
+		{
+			i++;
+			T aux = getByPosition(j)->data;
+			getByPosition(j)->data = getByPosition(i)->data;
+			getByPosition(i)->data = aux;
+		}
+	}
+	T aux = getByPosition(fin)->data;
+	getByPosition(fin)->data = getByPosition(i + 1)->data;
+	getByPosition(i + 1)->data = aux;
+	return i + 1;
+}
+
