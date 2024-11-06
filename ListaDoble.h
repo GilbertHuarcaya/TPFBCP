@@ -3,6 +3,8 @@
 #include "iostream"
 #include "Nodo.h"
 #include "functional"
+#include "fstream"
+#include "sstream"
 using namespace std;
 
 template <class T>
@@ -20,19 +22,21 @@ protected:
 public:
 	Nodo<T>* head;
 	Nodo<T>* tail;
-	int lastId = 1; // Para identificar el último nodo agregado
+	int nextId = 1; // Para identificar el último nodo agregado
 	int size = 0;
 
 	ListaDoble();
 	ListaDoble(string nombreArchivo);
 	~ListaDoble();
 	string getNombreArchivo();
-	void push_back(T data);
-	void push_front(T data);
+	void push_back(T data, int id);
+	void push_front(T data, int id);
 	T pop_back();
 	T pop_front();
-	void remove(Nodo<T>* nodo);
-	void update(T data);
+	void removeElement(Nodo<T>* nodo);
+	void removeElement(T data);
+	void updateElement(Nodo<T>* nodo);
+	void updateElement(T data);
 	void clear();
 	void print();
 	template<typename Format>
@@ -53,7 +57,7 @@ public:
 	Nodo<T>* getLast();
 	Nodo<T>* getFirst();
 	int getSize();
-	int getLastId();
+	int getNextId();
 
 	//Ordenamientos
 	template <typename Compare>
@@ -63,8 +67,15 @@ public:
 	void heapsort(Compare comp);
 
 	void QuickSort(function<bool(T, T)> comp, int inicio, int fin);
-
 	int particion_QS(function<bool(T, T)> comp, int inicio, int fin);
+	
+	//data set
+	void escribir();
+	void leer();
+	void recargar();
+	void agregar(T item);
+	void editar(T item);
+	void eliminar(T item);
 };
 
 template<class T>
@@ -174,7 +185,7 @@ string ListaDoble<T>::getNombreArchivo()
 }
 
 template <class T>
-void ListaDoble<T>::push_back(T data)
+void ListaDoble<T>::push_back(T data, int id)
 {
 	Nodo<T>* nodo = new Nodo<T>(data);
 	if (head == nullptr)
@@ -189,18 +200,18 @@ void ListaDoble<T>::push_back(T data)
 		tail = nodo;
 	}
 
-	if (nodo->data->getId() > lastId)
+	if (id > nextId)
 	{
-		lastId = nodo->data->getId() + 1;
+		nextId = id + 1;
 	}
 	else {
-		lastId++;
+		nextId++;
 	}
 	size++;
 }
 
 template <class T>
-void ListaDoble<T>::push_front(T data)
+void ListaDoble<T>::push_front(T data, int id)
 {
 	Nodo<T>* nodo = new Nodo<T>(data);
 	if (head == nullptr)
@@ -216,9 +227,12 @@ void ListaDoble<T>::push_front(T data)
 		head = nodo;
 	}
 
-	if (nodo->data->getId() > lastId)
+	if (id > nextId)
 	{
-		lastId = nodo->data->getId() + 1;
+		nextId = id + 1;
+	}
+	else {
+		nextId++;
 	}
 	size++;
 }
@@ -283,7 +297,7 @@ T ListaDoble<T>::pop_front()
 }
 
 template <class T>
-void ListaDoble<T>::remove(Nodo<T>* nodo)
+void ListaDoble<T>::removeElement(Nodo<T>* nodo)
 {
 	if (nodo == nullptr)
 	{
@@ -306,8 +320,41 @@ void ListaDoble<T>::remove(Nodo<T>* nodo)
 	size--;
 }
 
+template<class T>
+inline void ListaDoble<T>::removeElement(T data)
+{
+	Nodo<T>* nodo = search(data);
+	if (nodo != nullptr)
+	{
+		removeElement(nodo);
+	}
+	else {
+		cout << "No se encontro el elemento" << endl;
+		data->print();
+		system("pause");
+	}
+}
+
+template<class T>
+inline void ListaDoble<T>::updateElement(Nodo<T>* nodo)
+{
+	Nodo<T>* temp = head;
+	while (temp != nullptr)
+	{
+		if (temp == nodo)
+		{
+			temp->data = nodo->data;
+			return;
+		}
+		temp = temp->next;
+	}
+	cout << "No se encontro el elemento" << endl;
+	nodo->data->print();
+	system("pause");
+}
+
 template <class T>
-void ListaDoble<T>::update(T data)
+void ListaDoble<T>::updateElement(T data)
 {
 	Nodo<T>* nodo = this->search(data->getId());
 	if (nodo != nullptr)
@@ -337,6 +384,7 @@ void ListaDoble<T>::print()
 	while (temp != nullptr && temp->data != nullptr)
 	{
 		temp->data->print();
+		cout << "------------------------------------------------------------------" << endl;
 		cout << endl;
 		temp = temp->next;
 	}
@@ -351,6 +399,7 @@ void ListaDoble<T>::printWithFormat(Format formato)
 	while (temp != nullptr && temp->data != nullptr)
 	{
 		formato(temp->data);
+		cout << "------------------------------------------------------------------" << endl;
 		cout << endl;
 		temp = temp->next;
 	}
@@ -435,7 +484,7 @@ ListaDoble<T>* ListaDoble<T>::searchMultipleByValue(C callback)
 	{
 		if (callback(temp->data))
 		{
-			lista->push_back(temp->data);
+			lista->push_back(temp->data, temp->data->getId());
 		}
 		temp = temp->next;
 	}
@@ -490,9 +539,9 @@ int ListaDoble<T>::getSize()
 }
 
 template <class T>
-int ListaDoble<T>::getLastId()
+int ListaDoble<T>::getNextId()
 {
-	return lastId;
+	return nextId;
 }
 
 template <class T>
@@ -532,6 +581,7 @@ void ListaDoble<T>::printPaginado(int cantidadPorPagina)
 		// Imprime la página actual
 		while (current != nullptr && count < cantidadPorPagina) {
 			current->data->print();
+			cout << "------------------------------------------------------------------"<< endl;
 			cout << endl;
 			current = current->next;
 			count++;
@@ -619,5 +669,170 @@ int ListaDoble<T>::particion_QS(function<bool(T, T)> comp, int inicio, int fin)
 	getByPosition(fin)->data = getByPosition(i + 1)->data;
 	getByPosition(i + 1)->data = aux;
 	return i + 1;
+}
+
+/*
+* reemplaza por completo todo el archivo csv
+*/
+template<class T>
+inline void ListaDoble<T>::escribir() {
+	ofstream file(nombreArchivo);
+	Nodo<T>* temp = this->head;
+	bool header = true;
+	while (temp != nullptr) {
+		if (header) {
+			file << temp->data->escribirCabecera() << "\n";
+			file << temp->data->escribirLinea();
+			if (temp->next != nullptr) {
+				file << "\n";
+			}
+			header = false;
+		}
+		else {
+			file << temp->data->escribirLinea();
+			if (temp->next != nullptr) {
+				file << "\n";
+			}
+		}
+		temp = temp->next;
+	}
+	file.close();
+}
+
+template<class T>
+inline void ListaDoble<T>::leer() {
+	ifstream file(nombreArchivo);
+	string line;
+	bool header = true;
+	while (getline(file, line)) {
+		stringstream ss(line);
+		string idStr;
+		getline(ss, idStr, ',');
+
+		if (header && idStr == "id") {
+			header = false;
+		}
+		else {
+			T data = new remove_pointer<T>::type();
+			data->leerLinea(line);
+			if (data->getId() != 0) {
+				push_back(data, data->getId());
+			}
+		}
+	}
+	file.close();
+}
+
+template<class T>
+inline void ListaDoble<T>::recargar() {
+	ifstream file(nombreArchivo);
+	string line;
+	bool header = true;
+    while (getline(file, line)) {
+		stringstream ss(line);
+		string idStr;
+		getline(ss, idStr, ',');
+
+		if (header && idStr == "id") {
+			header = false;
+		}
+		else {
+			T data = new remove_pointer<T>::type();
+			data->leerLinea(line);
+			if (data->getId() != 0) {
+				if (search(data->getId()) != nullptr) {
+					updateElement(data);
+				}
+				else {
+					push_back(data, data->getId());
+				}
+			}
+		}
+    }
+}
+
+template<class T>
+inline void ListaDoble<T>::agregar(T item) {
+	//leer primero para ver si hay cabecera
+	ifstream file(nombreArchivo);
+	string line;
+	bool header = false;
+
+	//verificar si hay cabecera
+	getline(file, line);
+	stringstream ss(line);
+	string idStr;
+	getline(ss, idStr, ',');
+	if (idStr == "id") {
+		header = false;
+	}
+	file.close();
+
+	//agregar item
+	ofstream file(path);
+	if (!header) {
+		file << item->escribirCabecera() << "\n";
+	}
+	file << item->escribirLinea() << "\n";
+	file.close();
+}
+
+template<class T>
+inline void ListaDoble<T>::editar(T item) {
+	ifstream file(nombreArchivo);
+	ofstream temp("temp.txt");
+	string line;
+	bool header = true;
+	while (getline(file, line)) {
+		stringstream ss(line);
+		string idStr;
+		getline(ss, idStr, ',');
+
+		if (header && idStr == "id") {
+			header = false;
+		}
+		else {
+			T data = new remove_pointer<T>::type();
+			data->leerLinea(line);
+			if (data->getId() == item->getId()) {
+				temp << item->escribirLinea() << "\n";
+			}
+			else {
+				temp << line << "\n";
+			}
+		}
+	}
+	file.close();
+	temp.close();
+	remove(nombreArchivo.c_str());
+	rename("temp.txt", nombreArchivo.c_str());
+}
+
+template<class T>
+inline void ListaDoble<T>::eliminar(T item) {
+	ifstream file(nombreArchivo);
+	ofstream temp("temp.txt");
+	string line;
+	bool header = true;
+    while (getline(file, line)) {
+		stringstream ss(line);
+		string idStr;
+		getline(ss, idStr, ',');
+
+		if (header && idStr == "id") {
+			header = false;
+		}
+		else {
+			T data = new remove_pointer<T>::type();
+			data->leerLinea(line);
+			if (data->getId() != item->getId()) {
+				temp << line << "\n";
+			}
+		}
+    }
+	file.close();
+	temp.close();
+	remove(nombreArchivo.c_str());
+	rename("temp.txt", nombreArchivo.c_str());
 }
 

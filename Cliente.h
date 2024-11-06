@@ -102,7 +102,7 @@ void Cliente::setEmail(string email) { this->email = email; }
 void Cliente::setPassword(string password) { this->password = password; }
 
 void Cliente::agregarCuentaBancaria(CuentaBancaria* cuentaBancaria) {
-	cuentasBancarias->push_back(cuentaBancaria);
+	cuentasBancarias->push_back(cuentaBancaria, cuentaBancaria->getId());
 }
 
 ListaDoble<CuentaBancaria*>* Cliente::getCuentasBancarias() {
@@ -164,17 +164,17 @@ void Cliente::print() {
 }
 
 void Cliente::loadCuentasBancarias() {
-	ListaDoble<CuentaBancaria*>* todasLasCuentas = new ListaDoble<CuentaBancaria*>("Cuentas.csv");
-	File<ListaDoble<CuentaBancaria*>*, CuentaBancaria>::leer("Cuentas.csv", todasLasCuentas);
+	ListaDoble<CuentaBancaria*>* todasLasCuentas = new ListaDoble<CuentaBancaria*>("Datos/Cuentas.csv");
+	todasLasCuentas->leer();
 	Nodo<CuentaBancaria*>* temp = todasLasCuentas->head;
 	while (temp != nullptr) {
 		if (temp->data->getIdCliente() == id) {
 			Nodo<CuentaBancaria*>* temp2 = cuentasBancarias->search(temp->data->getId());
 			if (cuentasBancarias->getSize() != 0 && temp2 != nullptr) {
-				cuentasBancarias->update(temp->data);
+				cuentasBancarias->updateElement(temp->data);
 			}
 			else {
-				cuentasBancarias->push_back(temp->data);
+				cuentasBancarias->push_back(temp->data, temp->data->getId());
 			}
 		}
 		temp = temp->next;

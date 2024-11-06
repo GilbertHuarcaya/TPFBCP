@@ -53,9 +53,6 @@
     <ClInclude Include="Operacion.h">
       <Filter>Archivos de encabezado</Filter>
     </ClInclude>
-    <ClInclude Include="File.h">
-      <Filter>Archivos de encabezado</Filter>
-    </ClInclude>
     <ClInclude Include="Tarjeta.h">
       <Filter>Archivos de encabezado</Filter>
     </ClInclude>

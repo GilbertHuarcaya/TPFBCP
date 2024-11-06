@@ -3,10 +3,9 @@
 #include "iostream"
 #include "functional"
 #include "HashEntidadNodo.h"
-#include "Elemento.h"
 using namespace std;
 
-template<typename T = Elemento*, typename KEY = int>
+template<typename T, typename KEY = int>
 class HashTablaLista
 {
 protected:
@@ -17,8 +16,7 @@ protected:
 	HashEntidadNodo<T>* sortedMerge(HashEntidadNodo<T>* a, HashEntidadNodo<T>* b, Compare comp);
 	template <typename Compare>
 	void heapify(int heapSize, int i, Compare comp);
-	void insertarByPos(T data, int position);
-	void insertarByPos(T data, KEY key, int position);
+	void insertByPos(T data, KEY key, int position);
 
 public:
 	HashEntidadNodo<T>* head;
@@ -39,13 +37,14 @@ public:
 	T pop_front();
 
 	//eliminar
-	void remove(HashEntidadNodo<T>* hashEntidadNodo);
-	void remove(int key);
+	void removeElement(HashEntidadNodo<T>* hashEntidadNodo);
+	void removeElement(T data);
+	void removeElement(int key);
 	void removeByPos(int position);
 
 	//actualizar solo la data
-	void update(T data);
-	void update(T data, int key);
+	void updateElement(T data);
+	void updateElement(T data, int key);
 
 	//limpiar la lista
 	void clear();
@@ -94,6 +93,15 @@ public:
 	//quick sort
 	void QuickSort(function<bool(T, T)> comp, int inicio, int fin);
 	int particion_QS(function<bool(T, T)> comp, int inicio, int fin);
+
+
+	void escribir();
+	void leer();
+	void recargar();
+	void agregar(T item);
+	void editar(T item);
+	void eliminar(T item);
+
 };
 
 template<typename T, typename KEY>
@@ -170,6 +178,7 @@ inline void HashTablaLista<T, KEY>::heapify(int heapSize, int i, Compare comp)
 	// Si el más grande no es la raíz
 	if (largest != i) {
 		swap(getByPosition(i)->data, getByPosition(largest)->data);
+		swap(getByPosition(i)->key, getByPosition(largest)->key);
 		heapify(heapSize, largest, comp);
 	}
 }
@@ -218,9 +227,9 @@ inline void HashTablaLista<T, KEY>::push_back(T data, KEY key)
 		tail = hashEntidadNodo;
 	}
 
-	if (hashEntidadNodo->data->getId() > nextId)
+	if (key > nextId)
 	{
-		nextId = hashEntidadNodo->data->getId() + 1;
+		nextId = key + 1;
 	}
 	else {
 		nextId++;
@@ -245,48 +254,18 @@ inline void HashTablaLista<T, KEY>::push_front(T data, KEY key)
 		head = hashEntidadNodo;
 	}
 
-	if (hashEntidadNodo->data->getId() > nextId)
+	if (key > nextId)
 	{
-		nextId = hashEntidadNodo->data->getId() + 1;
+		nextId = key + 1;
+	}
+	else {
+		nextId++;
 	}
 	size++;
 }
 
 template<typename T, typename KEY>
-inline void HashTablaLista<T, KEY>::insertarByPos(T data, int position)
-{
-	HashEntidadNodo<T>* hashEntidadNodo = new HashEntidadNodo<T>(data);
-	if (head == nullptr)
-	{
-		head = hashEntidadNodo;
-		tail = hashEntidadNodo;
-	}
-	else
-	{
-		if (position == 0)
-		{
-			push_front(data);
-			return;
-		}
-		HashEntidadNodo<T>* temp = head;
-		for (int i = 0; i < position - 1; i++)
-		{
-			temp = temp->next;
-		}
-		hashEntidadNodo->next = temp->next;
-		hashEntidadNodo->prev = temp;
-		temp->next = hashEntidadNodo;
-		hashEntidadNodo->next->prev = hashEntidadNodo;
-	}
-	if (hashEntidadNodo->data->getId() > nextId)
-	{
-		nextId = hashEntidadNodo->data->getId() + 1;
-	}
-	size++;
-}
-
-template<typename T, typename KEY>
-inline void HashTablaLista<T, KEY>::insertarByPos(T data, KEY key, int position)
+inline void HashTablaLista<T, KEY>::insertByPos(T data, KEY key, int position)
 {
 	HashEntidadNodo<T, KEY>* hashEntidadNodo = new HashEntidadNodo<T, KEY>(data, key);
 	if (head == nullptr)
@@ -378,7 +357,7 @@ T HashTablaLista<T, KEY>::pop_front()
 }
 
 template<typename T, typename KEY>
-void HashTablaLista<T, KEY>::remove(HashEntidadNodo<T>* hashEntidadNodo)
+void HashTablaLista<T, KEY>::removeElement(HashEntidadNodo<T>* hashEntidadNodo)
 {
 	if (hashEntidadNodo == nullptr)
 	{
@@ -402,12 +381,27 @@ void HashTablaLista<T, KEY>::remove(HashEntidadNodo<T>* hashEntidadNodo)
 }
 
 template<typename T, typename KEY>
-inline void HashTablaLista<T, KEY>::remove(int key)
+inline void HashTablaLista<T, KEY>::removeElement(T data)
+{
+	HashEntidadNodo<T>* hashEntidadNodo = search(data);
+	if (hashEntidadNodo != nullptr)
+	{
+		removeElement(hashEntidadNodo);
+	}
+	else {
+		cout << "No se encontro el elemento" << endl;
+		data->print();
+		system("pause");
+	}
+}
+
+template<typename T, typename KEY>
+inline void HashTablaLista<T, KEY>::removeElement(int key)
 {
 	HashEntidadNodo<T>* hashEntidadNodo = search(key);
 	if (hashEntidadNodo != nullptr)
 	{
-		remove(hashEntidadNodo);
+		removeElement(hashEntidadNodo);
 	}
 	else {
 		cout << "No se encontro el elemento" << endl;
@@ -430,7 +424,7 @@ inline void HashTablaLista<T, KEY>::removeByPos(int position)
 }
 
 template<typename T, typename KEY>
-void HashTablaLista<T, KEY>::update(T data)
+void HashTablaLista<T, KEY>::updateElement(T data)
 {
 	HashEntidadNodo<T>* hashEntidadNodo = this->search(data->getId());
 	if (hashEntidadNodo != nullptr)
@@ -445,7 +439,7 @@ void HashTablaLista<T, KEY>::update(T data)
 }
 
 template<typename T, typename KEY>
-inline void HashTablaLista<T, KEY>::update(T data, int key)
+inline void HashTablaLista<T, KEY>::updateElement(T data, int key)
 {
 	HashEntidadNodo<T>* hashEntidadNodo = this->search(key);
 	if (hashEntidadNodo != nullptr)
@@ -475,7 +469,6 @@ void HashTablaLista<T, KEY>::print()
 	while (temp != nullptr && temp->data != nullptr)
 	{
 		temp->data->print();
-		cout << endl;
 		cout << "--------------------------------------------------------------------";
 		cout << endl;
 		temp = temp->next;
@@ -491,6 +484,7 @@ void HashTablaLista<T, KEY>::printWithFormat(Format formato)
 	while (temp != nullptr && temp->data != nullptr)
 	{
 		formato(temp->data);
+		cout << "------------------------------------------------------------------" << endl;
 		cout << endl;
 		temp = temp->next;
 	}
@@ -674,6 +668,7 @@ void HashTablaLista<T, KEY>::printPaginado(int cantidadPorPagina)
 		// Imprime la página actual
 		while (current != nullptr && count < cantidadPorPagina) {
 			current->data->print();
+			cout << "------------------------------------------------------------------" << endl;
 			cout << endl;
 			current = current->next;
 			count++;
@@ -725,6 +720,7 @@ inline void HashTablaLista<T, KEY>::heapsort(Compare comp)
 	// Extrae elementos del heap uno por uno
 	for (int i = heapSize - 1; i >= 0; i--) {
 		swap(getByPosition(0)->data, getByPosition(i)->data);
+		swap(getByPosition(0)->key, getByPosition(i)->key);
 		heapSize--;
 		heapify(heapSize, 0, comp);
 	}
@@ -752,8 +748,177 @@ int HashTablaLista<T, KEY>::particion_QS(function<bool(T, T)> comp, int inicio, 
 		{
 			i++;
 			swap(getByPosition(i)->data, getByPosition(j)->data);
+			swap(getByPosition(i)->key, getByPosition(j)->key);
 		}
 	}
 	swap(getByPosition(i + 1)->data, getByPosition(fin)->data);
+	swap(getByPosition(i + 1)->key, getByPosition(fin)->key);
 	return i + 1;
+}
+
+/*
+* reemplaza por completo todo el archivo csv
+*/
+template<typename T, typename KEY>
+void HashTablaLista<T, KEY>::escribir() {
+	ofstream file(nombreArchivo);
+	HashEntidadNodo<T>* temp = this->head;
+	bool header = true;
+	while (temp != nullptr) {
+		if (header) {
+			file << temp->data->escribirCabecera() << "\n";
+			file << temp->data->escribirLinea();
+			if (temp->next != nullptr) {
+				file << "\n";
+			}
+			header = false;
+		}
+		else {
+			file << temp->data->escribirLinea();
+			if (temp->next != nullptr) {
+				file << "\n";
+			}
+		}
+		temp = temp->next;
+	}
+	file.close();
+}
+
+template<typename T, typename KEY>
+void HashTablaLista<T, KEY>::leer() {
+	ifstream file(nombreArchivo);
+	string line;
+	bool header = true;
+	while (getline(file, line)) {
+		stringstream ss(line);
+		string idStr;
+		getline(ss, idStr, ',');
+
+		if (header && idStr == "id") {
+			header = false;
+		}
+		else {
+			T data = new remove_pointer<T>::type();
+			data->leerLinea(line);
+			if (data->getId() != 0) {
+				int key = data->getId();
+				push_back(data, key);
+			}
+		}
+	}
+	file.close();
+}
+
+template<typename T, typename KEY>
+void HashTablaLista<T, KEY>::recargar() {
+	ifstream file(nombreArchivo);
+	string line;
+	bool header = true;
+	while (getline(file, line)) {
+		stringstream ss(line);
+		string idStr;
+		getline(ss, idStr, ',');
+
+		if (header && idStr == "id") {
+			header = false;
+		}
+		else {
+			T data = new remove_pointer<T>::type();
+			data->leerLinea(line);
+			if (data->getId() != 0) {
+				int key = data->getId();
+				if (search(key) != nullptr) {
+					updateElement(data, key);
+				}
+				else {
+					push_back(data, key);
+				}
+			}
+		}
+	}
+}
+
+template<typename T, typename KEY>
+void HashTablaLista<T, KEY>::agregar(T item) {
+	//leer primero para ver si hay cabecera
+	ifstream file(nombreArchivo);
+	string line;
+	bool header = false;
+
+	//verificar si hay cabecera
+	getline(file, line);
+	stringstream ss(line);
+	string idStr;
+	getline(ss, idStr, ',');
+	if (idStr == "id") {
+		header = false;
+	}
+	file.close();
+
+	//agregar item
+	ofstream file(path);
+	if (!header) {
+		file << item->escribirCabecera() << "\n";
+	}
+	file << item->escribirLinea() << "\n";
+	file.close();
+}
+
+template<typename T, typename KEY>
+void HashTablaLista<T, KEY>::editar(T item) {
+	ifstream file(nombreArchivo);
+	ofstream temp("temp.txt");
+	string line;
+	bool header = true;
+	while (getline(file, line)) {
+		stringstream ss(line);
+		string idStr;
+		getline(ss, idStr, ',');
+
+		if (header && idStr == "id") {
+			header = false;
+		}
+		else {
+			T data = new remove_pointer<T>::type();
+			data->leerLinea(line);
+			if (data->getId() == item->getId()) {
+				temp << item->escribirLinea() << "\n";
+			}
+			else {
+				temp << line << "\n";
+			}
+		}
+	}
+	file.close();
+	temp.close();
+	remove(path.c_str());
+	rename("temp.txt", path.c_str());
+}
+
+template<typename T, typename KEY>
+void HashTablaLista<T, KEY>::eliminar(T item) {
+	ifstream file(path);
+	ofstream temp("temp.txt");
+	string line;
+	bool header = true;
+	while (getline(file, line)) {
+		stringstream ss(line);
+		string idStr;
+		getline(ss, idStr, ',');
+
+		if (header && idStr == "id") {
+			header = false;
+		}
+		else {
+			T data = new remove_pointer<T>::type();
+			data->leerLinea(line);
+			if (data->getId() != item->getId()) {
+				temp << line << "\n";
+			}
+		}
+	}
+	file.close();
+	temp.close();
+	remove(path.c_str());
+	rename("temp.txt", path.c_str());
 }

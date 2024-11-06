@@ -11,7 +11,7 @@ public:
 	Cola(string nombreArchivo) : ListaDoble<T>(nombreArchivo) {}
 	void encolar(T data)
 	{
-		ListaDoble<T>::push_back(data);
+		ListaDoble<T>::push_back(data, data->getId());
 	}
 	T desencolar()
 	{

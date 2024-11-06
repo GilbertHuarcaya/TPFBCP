@@ -45,11 +45,13 @@ public:
 	int getIdCuentaBancariaOrigen();
 	int getIdCuentaBancariaDestino();
 	TipoOperacion getTipo();
+	string getTipoStr();
 	double getMonto();
 	int getIdCanal();
 	int getIdSede();
 
 	EstadoOperacion getEstado();
+	string getEstadoStr();
 
 	void setEstado(EstadoOperacion estado);
 
@@ -115,11 +117,22 @@ int Operacion::getIdClienteDestino() { return idClienteDestino; }
 int Operacion::getIdCuentaBancariaOrigen() { return idCuentaBancariaOrigen; }
 int Operacion::getIdCuentaBancariaDestino() { return idCuentaBancariaDestino; }
 TipoOperacion Operacion::getTipo() { return tipo; }
+inline string Operacion::getTipoStr()
+{
+	string tipoOperacion[] = { "Ninguno", "Transferencia", "Deposito", "Retiro" };
+	return tipoOperacion[tipo];
+}
 double Operacion::getMonto() { return monto; }
 int Operacion::getIdCanal() { return idCanal; }
 int Operacion::getIdSede() { return idSede; }
 
 EstadoOperacion Operacion::getEstado() { return estado; }
+
+inline string Operacion::getEstadoStr()
+{
+	string estadoOperacion[] = { "Pendiente", "Realizada", "Rechazada" };
+	return estadoOperacion[estado];
+}
 
 inline void Operacion::setEstado(EstadoOperacion estado)
 {
@@ -170,16 +183,13 @@ inline string Operacion::escribirCabecera()
 
 void Operacion::print() {
 
-	string tipoOperacion[] = { "Ninguno", "Transferencia", "Deposito", "Retiro" };
-	string estadoOperacion[] = { "Pendiente", "Realizada", "Rechazada" };
-
 	cout << "ID: " << getId() << endl;
 	cout << "IdClienteOrigen: " << idClienteOrigen << endl;
 	cout << "IdClienteDestino: " << idClienteDestino << endl;
 	cout << "IdCuentaBancariaOrigen: " << idCuentaBancariaOrigen << endl;
 	cout << "IdCuentaBancariaDestino: " << idCuentaBancariaDestino << endl;
-	cout << "Tipo: " << tipoOperacion[tipo] << endl;
-	cout << "Estado: " << estadoOperacion[estado] << endl;
+	cout << "Tipo: " << getTipoStr() << endl;
+	cout << "Estado: " << getEstadoStr() << endl;
 	cout << "Monto: " << monto << endl;
 	if (idCanal != 0 ) cout << "IdCanal: " << idCanal << endl;
 	if (idSede != 0)  cout << "IdSede: " << idSede << endl;

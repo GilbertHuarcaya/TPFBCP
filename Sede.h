@@ -2,7 +2,6 @@
 #include "Elemento.h"
 #include "ListaDoble.h"
 #include "Canal.h"
-#include "File.h"
 #include "string"
 #include "sstream"
 
@@ -40,6 +39,7 @@ public:
 	string getTelefono();
 	string getEmail();
 	EstadoSede getEstado();
+	string getEstadoStr();
 	ListaDoble<Canal*>* getCanales();
 
 	//SETTERS
@@ -192,6 +192,16 @@ EstadoSede Sede::getEstado() {
 	return estado;
 }
 
+inline string Sede::getEstadoStr()
+{
+	string estadoStr[] = {
+		"INACTIVO",
+		"ACTIVO"
+	};
+
+	return estadoStr[estado];
+}
+
 inline ListaDoble<Canal*>* Sede::getCanales()
 {
 	return canales;
@@ -239,7 +249,7 @@ inline ListaDoble<Canal*>* Sede::buscarCanalesPorTipo(ETipoDeCanal tipo)
 	{
 		if (temp->data->getTipoDeCanal() == tipo)
 		{
-			canalesPorTipo->push_back(temp->data);
+			canalesPorTipo->push_back(temp->data, temp->data->getId());
 		}
 		temp = temp->next;
 	}
@@ -285,8 +295,8 @@ inline string Sede::escribirCabecera()
 
 inline void Sede::loadCanales()
 {
-	ListaDoble<Canal*>* todosLosCanales = new ListaDoble<Canal*>("Canales.csv");
-	File<ListaDoble<Canal*>*, Canal>::leer("Canales.csv", todosLosCanales);
+	ListaDoble<Canal*>* todosLosCanales = new ListaDoble<Canal*>("Datos/Canales.csv");
+	todosLosCanales->leer();
 	Nodo<Canal*>* temp = todosLosCanales->head;
 	while (temp != nullptr)
 	{
@@ -295,11 +305,11 @@ inline void Sede::loadCanales()
 			Nodo<Canal*>* temp2 = canales->search(temp->data->getId());
 			if (canales->getSize() != 0 && temp2 != nullptr)
 			{
-				canales->update(temp->data);
+				canales->updateElement(temp->data);
 			}
 			else
 			{
-				canales->push_back(temp->data);
+				canales->push_back(temp->data, temp->data->getId());
 			}
 		}
 		temp = temp->next;
