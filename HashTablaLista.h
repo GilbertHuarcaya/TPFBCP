@@ -876,6 +876,7 @@ void HashTablaLista<T, KEY>::editar(T item) {
 		getline(ss, idStr, ',');
 
 		if (header && idStr == "id") {
+			temp << item->escribirCabecera() << "\n";
 			header = false;
 		}
 		else {
@@ -907,6 +908,7 @@ void HashTablaLista<T, KEY>::eliminar(T item) {
 		getline(ss, idStr, ',');
 
 		if (header && idStr == "id") {
+			temp << item->escribirCabecera() << "\n";
 			header = false;
 		}
 		else {

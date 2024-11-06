@@ -789,6 +789,7 @@ inline void ListaDoble<T>::editar(T item) {
 		getline(ss, idStr, ',');
 
 		if (header && idStr == "id") {
+			temp << item->escribirCabecera() << "\n";
 			header = false;
 		}
 		else {
@@ -820,6 +821,7 @@ inline void ListaDoble<T>::eliminar(T item) {
 		getline(ss, idStr, ',');
 
 		if (header && idStr == "id") {
+			temp << item->escribirCabecera() << "\n";
 			header = false;
 		}
 		else {

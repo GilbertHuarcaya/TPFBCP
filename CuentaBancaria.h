@@ -36,6 +36,8 @@ public:
 	void setTarjeta(Tarjeta* tarjeta);
 	void setOperaciones(ListaDoble<Operacion*>* operaciones);
 
+	bool validarPassword(string  password);
+
 	//UPDATE
 	void agregarOperacion(Operacion* operacion);
 	void retirar(double cantidad);
@@ -107,6 +109,11 @@ void CuentaBancaria::setNumeroCuenta(string numeroCuenta) { this->numeroCuenta =
 void CuentaBancaria::setSaldo(double saldo) { this->saldo = saldo; }
 void CuentaBancaria::setTarjeta(Tarjeta* tarjeta) { this->tarjeta = tarjeta; }
 void CuentaBancaria::setOperaciones(ListaDoble<Operacion*>* operaciones) { this->operaciones = operaciones; }
+
+inline bool CuentaBancaria::validarPassword(string password)
+{
+	return this->password == password;
+}
 
 string CuentaBancaria::escribirLinea() {
 	return to_string(id) + "," + to_string(idCliente) + "," + password + "," + numeroCuenta + "," + to_string(saldo);

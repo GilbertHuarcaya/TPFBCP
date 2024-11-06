@@ -1119,6 +1119,7 @@ inline void Bcp::MenuOperacionPorCanal(Canal* canal, CuentaBancaria* cuenta)
 				gotoxy(45, 22); cout << RED << system("pause") << RESET;
 				break;
 			case 1:
+			{
 				cout << "Su SALDO actual es: " << cuenta->getSaldo() << endl << endl;
 
 				cout << "Transferir..." << endl;
@@ -1129,17 +1130,49 @@ inline void Bcp::MenuOperacionPorCanal(Canal* canal, CuentaBancaria* cuenta)
 				cout << "Ingrese la cuenta de destino: ";
 				cin >> cuentaDestino;
 
+				string contraseniaCB;
+				cout << endl;
+				cout << "Para continuar, ingrese la contrasenia de 4 digitos de su cuenta bancaria: ";
+
+				cin >> contraseniaCB;
+
+				if (cuenta->validarPassword(contraseniaCB)) {
+					cout << "Contrasenia correcta" << endl;
+				}
+				else {
+					cout << "Contrasenia incorrecta" << endl;
+					system("pause");
+					break;
+				}
+
 				operacion = cuenta->crearTransferencia(getNextId(colaOperaciones), cuentaOrigen, cuentaDestino, monto, canal->getId(), canal->getIdSede());
 				if (operacion != nullptr) colaOperaciones->encolar(operacion);
-
+				cout << "Operacion en cola" << endl;
 				system("pause");
 				break;
+			}
 			case 2:
+			{
 				cout << "Depositar..." << endl;
+
+				// Lambda para generar un monto aleatorio
+				auto generarMontoAleatorio = []() -> double {
+					Random r;
+					return r.Next(1, 1000);
+					};
+				double dineroEnMisBolsillos = generarMontoAleatorio();
+
+				cout << "Dinero en mis bolsillos: " << dineroEnMisBolsillos << endl;
 
 				cout << "Ingrese el monto a depositar: ";
 
 				cin >> monto;
+
+				if (monto > dineroEnMisBolsillos) {
+					cout << "No tienes suficiente dinero en tus bolsillos" << endl;
+					system("pause");
+					break;
+				}
 
 				cout << "Desea depositar a esta misma cuenta? (s: Si , n: A otra cuenta)";
 
@@ -1156,9 +1189,13 @@ inline void Bcp::MenuOperacionPorCanal(Canal* canal, CuentaBancaria* cuenta)
 					operacion = cuenta->crearDeposito(getNextId(colaOperaciones), cuentaDestino, monto, canal->getId(), canal->getIdSede());
 					if (operacion != nullptr) colaOperaciones->encolar(operacion);
 				}
+				cout << "Operacion en cola" << endl;
 				system("pause");
 				break;
+			}
 			case 3:
+			{
+
 				cout << "Su SALDO actual es: " << cuenta->getSaldo() << endl << endl;
 
 				cout << "Retirar..." << endl;
@@ -1167,10 +1204,29 @@ inline void Bcp::MenuOperacionPorCanal(Canal* canal, CuentaBancaria* cuenta)
 
 				cin >> monto;
 
-				operacion = cuenta->crearRetiro(getNextId(colaOperaciones), cuentaOrigen, monto, canal->getId(), canal->getIdSede());
+				string contraseniaCB;
+				cout << endl;
+				cout << "Para continuar, ingrese la contrasenia de 4 digitos de su cuenta bancaria: ";
+
+
+				cin >> contraseniaCB;
+
+				if (cuenta->validarPassword(contraseniaCB)) {
+					cout << "Contrasenia correcta" << endl;
+				}
+				else {
+					cout << "Contrasenia incorrecta" << endl;
+					system("pause");
+					break;
+				}
+
+					operacion = cuenta->crearRetiro(getNextId(colaOperaciones), cuentaOrigen, monto, canal->getId(), canal->getIdSede());
 				if (operacion != nullptr) encolar<Cola<Operacion*>*, Operacion>(operacion, colaOperaciones);
+
+				cout << "Operacion en cola" << endl;
 				system("pause");
 				break;
+			}
 			case 4:
 				return false;
 				break;
@@ -1185,6 +1241,7 @@ inline void Bcp::MenuOperacionPorCanal(Canal* canal, CuentaBancaria* cuenta)
 			}
 			cout << endl;
 			cout << "Su SALDO actual es: " << cuenta->getSaldo() << endl << endl;
+			system("pause");
 			return true;
 			};
 
@@ -1192,7 +1249,7 @@ inline void Bcp::MenuOperacionPorCanal(Canal* canal, CuentaBancaria* cuenta)
 	} else {
 		opciones = {
 			"Ver informacion del canal",
-			"Este canal est� INACTIVO - Salir"
+			"Este canal esta INACTIVO - Salir"
 		};
 		auto menuInactivo = [canal, &monto, &SN, &cuentaDestino, &cuentaOrigen, &operacion, cuenta, this](int seleccion) {
 			switch (seleccion) {
