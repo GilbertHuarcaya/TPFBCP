@@ -46,6 +46,8 @@ public:
 	void setNombre(string nombre);
 	void setIdSede(int idSede);
 	void setTipoDeCanal(ETipoDeCanal tipoDeCanal);
+	string getTipoDeCanalStr();
+	string getEstadoStr();
 	void setActivo(bool activo);
 
 	//UPDATE
@@ -60,6 +62,7 @@ public:
 	// FILE
 	void leerLinea(string linea) override;
 	string escribirLinea() override;
+	string escribirCabecera() override;
 
 	// PRINT
 	void print();
@@ -146,6 +149,29 @@ void Canal::setTipoDeCanal(ETipoDeCanal tipoDeCanal)
 	this->tipoDeCanal = tipoDeCanal;
 }
 
+inline string Canal::getTipoDeCanalStr()
+{
+	string tipoDeCanalStr[] = {
+		"OTROCANAL",
+		"VENTANILLA",
+		"AGENTE",
+		"WEB",
+		"APP",
+		"YAPE",
+		"CAJERO"
+	};
+	return tipoDeCanalStr[tipoDeCanal];
+}
+
+inline string Canal::getEstadoStr()
+{
+	string estadoStr[] = {
+		"INACTIVO",
+		"ACTIVO"
+	};
+	return estadoStr[estado];
+}
+
 inline void Canal::setActivo(bool activo)
 {
 	estado = activo ? CANAL_ACTIVO : CANAL_INACTIVO;
@@ -187,30 +213,21 @@ string Canal::escribirLinea()
 	return ss.str();
 }
 
+inline string Canal::escribirCabecera()
+{
+	return "id,idSede,nombre,tipoDeCanal,estado";
+}
+
 void Canal::print()
 {
-	string tipoDeCanalStr[] = {
-		"OTROCANAL",
-		"VENTANILLA",
-		"AGENTE",
-		"WEB",
-		"APP",
-		"YAPE",
-		"CAJERO"
-	};
-
-	string estadoStr[] = {
-		"INACTIVO",
-		"ACTIVO"
-	};
 
 	cout << "ID: " << id << endl;
 	if (idSede != 0) {
 		cout << "ID Sede: " << idSede << endl;
 	}
 	cout << "Nombre: " << nombre << endl;
-	cout << "Tipo de Canal: " << tipoDeCanalStr[tipoDeCanal] << endl;
-	cout << "Estado: " << estadoStr[estado] << endl;
+	cout << "Tipo de Canal: " << getTipoDeCanalStr() << endl;
+	cout << "Estado: " << getEstadoStr() << endl;
 
 }
 

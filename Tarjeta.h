@@ -33,6 +33,7 @@ public:
 	//FILE
 	string escribirLinea() override;
 	void leerLinea(string csv) override;
+	string escribirCabecera() override;
 
 	//PRINT
 	void print();
@@ -142,6 +143,11 @@ void Tarjeta::leerLinea(string csv) {
 		istringstream(temp) >> get_time(localtime(&fechaVencimiento), "%Y-%m-%d");
 		getline(ss, cvv, ',');
 	}
+}
+
+inline string Tarjeta::escribirCabecera()
+{
+	return "id,idCliente,idCuentaBancaria,numero,fechaVencimiento,cvv";
 }
 
 void Tarjeta::print() {

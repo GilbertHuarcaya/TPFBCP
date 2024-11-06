@@ -4,7 +4,6 @@
 #include "Operacion.h"
 #include "Tarjeta.h"
 #include "sstream"
-#include "File.h"
 using namespace std;
 
 class CuentaBancaria : public Elemento
@@ -27,6 +26,7 @@ public:
 	string getNumeroCuenta();
 	double getSaldo();
 	Tarjeta* getTarjeta();
+	void borrarTarjeta();
 	ListaDoble<Operacion*>* getOperaciones();
 
 	void setIdCliente(int idCliente);
@@ -35,6 +35,8 @@ public:
 	void setSaldo(double saldo);
 	void setTarjeta(Tarjeta* tarjeta);
 	void setOperaciones(ListaDoble<Operacion*>* operaciones);
+
+	bool validarPassword(string  password);
 
 	//UPDATE
 	void agregarOperacion(Operacion* operacion);
@@ -57,10 +59,12 @@ public:
 	//FILE
 	string escribirLinea();
 	void leerLinea(string File);
+	string escribirCabecera() override;
 
 	//PRINT
 	void print();
 	void imprimirOperaciones();
+
 };
 
 
@@ -93,6 +97,10 @@ string CuentaBancaria::getPassword() { return password; }
 string CuentaBancaria::getNumeroCuenta() { return numeroCuenta; }
 double CuentaBancaria::getSaldo() { return saldo; }
 Tarjeta* CuentaBancaria::getTarjeta() { return tarjeta; }
+inline void CuentaBancaria::borrarTarjeta()
+{
+	tarjeta = nullptr;
+}
 ListaDoble<Operacion*>* CuentaBancaria::getOperaciones() { return operaciones; }
 
 void CuentaBancaria::setIdCliente(int idCliente) { this->idCliente = idCliente; }
@@ -101,6 +109,11 @@ void CuentaBancaria::setNumeroCuenta(string numeroCuenta) { this->numeroCuenta =
 void CuentaBancaria::setSaldo(double saldo) { this->saldo = saldo; }
 void CuentaBancaria::setTarjeta(Tarjeta* tarjeta) { this->tarjeta = tarjeta; }
 void CuentaBancaria::setOperaciones(ListaDoble<Operacion*>* operaciones) { this->operaciones = operaciones; }
+
+inline bool CuentaBancaria::validarPassword(string password)
+{
+	return this->password == password;
+}
 
 string CuentaBancaria::escribirLinea() {
 	return to_string(id) + "," + to_string(idCliente) + "," + password + "," + numeroCuenta + "," + to_string(saldo);
@@ -127,9 +140,14 @@ void CuentaBancaria::leerLinea(string File) {
 	loadTarjeta();
 }
 
+inline string CuentaBancaria::escribirCabecera()
+{
+	return "id,idCliente,password,numeroCuenta,saldo";
+}
+
 void CuentaBancaria::agregarOperacion(Operacion* operacion)
 {
-	operaciones->push_back(operacion);
+	operaciones->push_back(operacion, operacion->getId());
 }
 
 void CuentaBancaria::retirar(double cantidad)
@@ -137,7 +155,8 @@ void CuentaBancaria::retirar(double cantidad)
 	if (saldo >= cantidad)
 	{
 		saldo -= cantidad;
-		File<ListaDoble<CuentaBancaria*>*, CuentaBancaria>::editar("Cuentas.csv", this);
+		ListaDoble<CuentaBancaria*>* todasLasCuentas = new ListaDoble<CuentaBancaria*>("Datos/Cuentas.csv");
+		todasLasCuentas->editar(this);
 	}
 	else
 	{
@@ -148,7 +167,8 @@ void CuentaBancaria::retirar(double cantidad)
 void CuentaBancaria::depositar(double cantidad)
 {
 	saldo += cantidad;
-	File<ListaDoble<CuentaBancaria*>*, CuentaBancaria>::editar("Cuentas.csv", this);
+	ListaDoble<CuentaBancaria*>* todasLasCuentas = new ListaDoble<CuentaBancaria*>("Datos/Cuentas.csv");
+	todasLasCuentas->editar(this);
 }
 
 void CuentaBancaria::transferir(CuentaBancaria* cuenta, double cantidad)
@@ -157,7 +177,8 @@ void CuentaBancaria::transferir(CuentaBancaria* cuenta, double cantidad)
 	{
 		saldo -= cantidad;
 		cuenta->depositar(cantidad);
-		File<ListaDoble<CuentaBancaria*>*, CuentaBancaria>::editar("Cuentas.csv", this);
+		ListaDoble<CuentaBancaria*>* todasLasCuentas = new ListaDoble<CuentaBancaria*>("Datos/Cuentas.csv");
+		todasLasCuentas->editar(this);
 	}
 	else
 	{
@@ -170,11 +191,11 @@ void CuentaBancaria::imprimirOperaciones()
 
 	if (operaciones->head == nullptr)
 	{
-		cout << "No hay operaciones" << endl;
+		cout << "	No hay operaciones" << endl;
 	}
 	else 
 	{
-		cout << "Tiene " << operaciones->getSize() << " operaciones." << endl;
+		cout << "	Tiene " << operaciones->getSize() << " operaciones." << endl;
 	}
 }
 
@@ -184,13 +205,13 @@ void CuentaBancaria::print()
 	cout << "ID Cliente: " << idCliente << endl;
 	cout << "Password: " << password << endl;
 	cout << "Numero de Cuenta: " << numeroCuenta << endl;
-	cout << "Saldo: " << saldo << endl;
+	cout << "Saldo: " << saldo << endl << endl;
 	cout << "Tarjeta: " << endl;
 	if (tarjeta != nullptr) {
 		tarjeta->print();
 	}
 	else {
-		cout << "No hay tarjeta asociada" << endl;
+		cout << "	No hay tarjeta asociada" << endl << endl;
 	}
 	cout << "Operaciones: " << endl;
 	imprimirOperaciones();
@@ -198,8 +219,8 @@ void CuentaBancaria::print()
 
 inline CuentaBancaria* CuentaBancaria::buscarCuentaPorNumero(string numeroCuenta)
 {
-	ListaDoble<CuentaBancaria*>* todasLasCuentas = new ListaDoble<CuentaBancaria*>("Cuentas.csv");
-	File<ListaDoble<CuentaBancaria*>*, CuentaBancaria>::leer("Cuentas.csv", todasLasCuentas);
+	ListaDoble<CuentaBancaria*>* todasLasCuentas = new ListaDoble<CuentaBancaria*>("Datos/Cuentas.csv");
+	todasLasCuentas->leer();
 	Nodo<CuentaBancaria*>* temp = todasLasCuentas->head;
 	while (temp != nullptr)
 	{
@@ -217,8 +238,9 @@ void CuentaBancaria::loadTarjeta()
 {
 	//Bool para verificar si se encontro la tarjeta de la cuenta bancaria
 	bool encontrado = false;
-	ListaDoble<Tarjeta*>* todasLasTarjetas = new ListaDoble<Tarjeta*>("Tarjetas.csv");
-	File<ListaDoble<Tarjeta*>*, Tarjeta>::leer("Tarjetas.csv", todasLasTarjetas);
+
+	ListaDoble<Tarjeta*>* todasLasTarjetas = new ListaDoble<Tarjeta*>("Datos/Tarjetas.csv");
+	todasLasTarjetas->leer();
 	Nodo<Tarjeta*>* temp = todasLasTarjetas->head;
 	while (temp != nullptr)
 	{
@@ -236,8 +258,8 @@ void CuentaBancaria::loadTarjeta()
 
 void CuentaBancaria::loadOperaciones()
 {
-	ListaDoble<Operacion*>* todasLasOperaciones = new ListaDoble<Operacion*>("Operaciones.csv");
-	File<ListaDoble<Operacion*>*, Operacion>::leer("Operaciones.csv", todasLasOperaciones);
+	ListaDoble<Operacion*>* todasLasOperaciones = new ListaDoble<Operacion*>("Datos/Operaciones.csv");
+	todasLasOperaciones->leer();
 	Nodo<Operacion*>* temp = todasLasOperaciones->head;
 	while (temp != nullptr)
 	{
@@ -246,11 +268,11 @@ void CuentaBancaria::loadOperaciones()
 			Nodo<Operacion*>* temp2 = operaciones->search(temp->data->getId());
 			if (operaciones->getSize() != 0 && temp2 != nullptr)
 			{
-				operaciones->update(temp->data);
+				operaciones->updateElement(temp->data);
 			}
 			else
 			{
-				operaciones->push_back(temp->data);
+				operaciones->push_back(temp->data, temp->data->getId());
 			}
 		}
 		temp = temp->next;

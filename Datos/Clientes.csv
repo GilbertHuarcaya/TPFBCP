@@ -1,4 +1,5 @@
-1,Juan,Perez,Av. Los Alamos,987654321,d,1234
+id,nombre,apellido,direccion,telefono,email,password
+1,Pedrito Ale,Perez,Av. Los Alamos,987654321,d,1234
 2,Maria,Gomez,Av. Los Pinos,123456789,d,1234
 3,Juan,Perez,Av. Los Alamos,987654321,d,1234
 4,Juan,Perez,Av. Los Alamos,987654321,d,1234
@@ -38,7 +39,15 @@
 38,j,s,dd,2,em,123456
 39,Admininstrador,Sistema,d,0,admin@bcp.pe,123456
 40,f,f,s,3,email@email.c,123456
-41,Gilbert,Huarcaya,d,932400537,gh@gmail.com,123456
+41,Gilbert,Huarcaya,Direccion,932400537,gh@gmail.com,123456
 42,g,h,,999999999,g@gmail.com,123456
 43,g,h,,932400536,ghm@gmail.com,123456
 44,Gilbert,Huarcaya,,99999444,test@gmail.com,123456
+45,galonso,hmati,,93222222,g123@gmail.com,123456
+46,gal,hms,,93223322,g123456@gmail.com,123456
+47,asdas,asdasdsad,,4234324,sdasdasd,123456
+48,asdsadasd,adadasd,,3123123,dasd123sdfd,123456
+49,asdasd,asdasdasd,asdasdad,123123,sdfsdf34dg@gmail.com,123456
+50,dsgfdsfg,dsfsdfdsf,sdfdsff,2342423432,fsdfdsfsf,123456
+51,afdsfdsf,sdsfsdfsdf,sdfsdfsdf,313123213,sdfdsfsdfsdf,123456
+52,Gilbert Alonso,Huarcaya Matias,Chorrillos casa,9332222233,ghc@gmail.com,123456

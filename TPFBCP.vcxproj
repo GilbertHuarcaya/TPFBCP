@@ -133,9 +133,10 @@
     <ClInclude Include="Cola.h" />
     <ClInclude Include="CuentaBancaria.h" />
     <ClInclude Include="Elemento.h" />
-    <ClInclude Include="File.h" />
     <ClInclude Include="HashEntidad.h" />
+    <ClInclude Include="HashEntidadNodo.h" />
     <ClInclude Include="HashTabla.h" />
+    <ClInclude Include="HashTablaLista.h" />
     <ClInclude Include="ListaDoble.h" />
     <ClInclude Include="Nodo.h" />
     <ClInclude Include="NodoArbol.h" />

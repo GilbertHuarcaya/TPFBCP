@@ -42,6 +42,7 @@ public:
 	ListaDoble<CuentaBancaria*>* getCuentasBancarias();
 	void actualizarDatos(string nombre, string apellido, string direccion, string telefono, string email, string password);
 	string escribirLinea() override;
+	string escribirCabecera() override;
 	void leerLinea(string linea) override;
 	void print();
 	void loadCuentasBancarias();
@@ -101,7 +102,7 @@ void Cliente::setEmail(string email) { this->email = email; }
 void Cliente::setPassword(string password) { this->password = password; }
 
 void Cliente::agregarCuentaBancaria(CuentaBancaria* cuentaBancaria) {
-	cuentasBancarias->push_back(cuentaBancaria);
+	cuentasBancarias->push_back(cuentaBancaria, cuentaBancaria->getId());
 }
 
 ListaDoble<CuentaBancaria*>* Cliente::getCuentasBancarias() {
@@ -121,6 +122,11 @@ string Cliente::escribirLinea() {
 	stringstream ss;
 	ss << id << "," << nombre << "," << apellido << "," << direccion << "," << telefono << "," << email << "," << password;
 	return ss.str();
+}
+
+inline string Cliente::escribirCabecera()
+{
+	return "id,nombre,apellido,direccion,telefono,email,password";
 }
 
 void Cliente::leerLinea(string linea) {
@@ -149,26 +155,26 @@ void Cliente::print() {
 	cout << "Password: " << password << endl;
 	cout << "Cuentas Bancarias: " << endl;
 	if (cuentasBancarias->head == nullptr) {
-		cout << "No hay cuentas bancarias" << endl;
+		cout << "	No hay cuentas bancarias" << endl;
 	}
 	else {
-		cout << "Tiene " << cuentasBancarias->getSize() << " cuentas bancarias." << endl;
+		cout << "	Tiene " << cuentasBancarias->getSize() << " cuentas bancarias." << endl;
 	}
 	cout << endl;
 }
 
 void Cliente::loadCuentasBancarias() {
-	ListaDoble<CuentaBancaria*>* todasLasCuentas = new ListaDoble<CuentaBancaria*>("Cuentas.csv");
-	File<ListaDoble<CuentaBancaria*>*, CuentaBancaria>::leer("Cuentas.csv", todasLasCuentas);
+	ListaDoble<CuentaBancaria*>* todasLasCuentas = new ListaDoble<CuentaBancaria*>("Datos/Cuentas.csv");
+	todasLasCuentas->leer();
 	Nodo<CuentaBancaria*>* temp = todasLasCuentas->head;
 	while (temp != nullptr) {
 		if (temp->data->getIdCliente() == id) {
 			Nodo<CuentaBancaria*>* temp2 = cuentasBancarias->search(temp->data->getId());
 			if (cuentasBancarias->getSize() != 0 && temp2 != nullptr) {
-				cuentasBancarias->update(temp->data);
+				cuentasBancarias->updateElement(temp->data);
 			}
 			else {
-				cuentasBancarias->push_back(temp->data);
+				cuentasBancarias->push_back(temp->data, temp->data->getId());
 			}
 		}
 		temp = temp->next;
