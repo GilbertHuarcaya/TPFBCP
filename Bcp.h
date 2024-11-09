@@ -11,6 +11,7 @@
 #include "functional"
 #include "vector"
 #include "HashTablaLista.h"
+#include "ArbolBinario.h"
 #include "iostream"
 
 using namespace std;
@@ -29,13 +30,13 @@ private:
 	ListaDoble<CuentaBancaria*>* cuentas;
 	ListaDoble<Tarjeta*>* tarjetas;
 	ListaDoble<Operacion*>* operaciones;
-	ListaDoble<Canal*>* canales;
 
 	Cola<Operacion*>* colaOperaciones;
 
 	HashTablaLista<Cliente*>* hashClientes;
 	HashTablaLista<Sede*>* hashSedes;
 
+	ArbolBinario<Canal*>* canales;
 public:
 	Bcp()
 	{
@@ -43,11 +44,14 @@ public:
 		cuentas = new ListaDoble<CuentaBancaria*>("Datos/Cuentas.csv");
 		tarjetas = new ListaDoble<Tarjeta*>("Datos/Tarjetas.csv");
 		operaciones = new ListaDoble<Operacion*>("Datos/Operaciones.csv");
-		canales = new ListaDoble<Canal*>("Datos/Canales.csv");
 		colaOperaciones = new Cola<Operacion*>("Datos/ColaOperaciones.csv");
 
 		hashClientes = new HashTablaLista<Cliente*>("Datos/Clientes.csv");
 		hashSedes = new HashTablaLista<Sede*>("Datos/Sedes.csv");
+
+		//Arboles
+		canales = new ArbolBinario<Canal*>([&](Canal* a, Canal* b) {return a->getId() > b->getId(); }, "Datos/Canales.csv");
+
 
 		loadAll();
 	}
@@ -109,7 +113,7 @@ public:
 	//helpers
 	ListaDoble<CuentaBancaria*>* buscarCuentaPorIdCliente(int idCliente);
 
-	ListaDoble<Canal*>* buscarCanalesSinSede();
+	ArbolBinario<Canal*>* buscarCanalesSinSede();
 
 	void ejecutarOperacion(Operacion* operacion);
 
@@ -273,7 +277,7 @@ void Bcp::loadAll()
 	load<ListaDoble<CuentaBancaria*>*, CuentaBancaria>(cuentas);
 	load<ListaDoble<Tarjeta*>*, Tarjeta>(tarjetas);
 	load<ListaDoble<Operacion*>*, Operacion>(operaciones);
-	load<ListaDoble<Canal*>*, Canal>(canales);
+	load<ArbolBinario<Canal*>*, Canal>(canales);
 
 	load<HashTablaLista<Cliente*>*, Cliente>(hashClientes);
 	load<HashTablaLista<Sede*>*, Sede>(hashSedes);
@@ -285,7 +289,7 @@ void Bcp::reloadAll()
 	reload<ListaDoble<CuentaBancaria*>*, CuentaBancaria>(cuentas);
 	reload<ListaDoble<Tarjeta*>*, Tarjeta>(tarjetas);
 	reload<ListaDoble<Operacion*>*, Operacion>(operaciones);
-	reload<ListaDoble<Canal*>*, Canal>(canales);
+	reload<ArbolBinario<Canal*>*, Canal>(canales);
 
 	reload<HashTablaLista<Cliente*>*, Cliente>(hashClientes);
 	reload<HashTablaLista<Sede*>*, Sede>(hashSedes);
@@ -308,19 +312,21 @@ ListaDoble<CuentaBancaria*>* Bcp::buscarCuentaPorIdCliente(int idCliente)
 	return cuentasCliente->head != nullptr ? cuentasCliente : nullptr;
 }
 
-inline ListaDoble<Canal*>* Bcp::buscarCanalesSinSede()
+inline ArbolBinario<Canal*>* Bcp::buscarCanalesSinSede()
 {
-	Nodo<Canal*>* temp = canales->head;
-	ListaDoble<Canal*>* canalesSinSede = new ListaDoble<Canal*>();
+
+	NodoArbol<Canal*>* temp = canales->getRaiz();
+	ArbolBinario<Canal*>* canalesSinSede = new ArbolBinario<Canal*>("");
 	while (temp != nullptr)
 	{
-		if (temp->data->getIdSede() == 0)
+		if (temp->dato->getIdSede() == 0)
 		{
-			canalesSinSede->push_back(temp->data, temp->data->getId());
+			canalesSinSede->insertar(temp->dato);
 		}
-		temp = temp->next;
+		temp = temp->derecha;
 	}
-	return canalesSinSede->head != nullptr ? canalesSinSede : nullptr;
+	return canalesSinSede;
+    
 }
 
 void Bcp::ejecutarOperacion(Operacion* operacion) {
@@ -991,25 +997,36 @@ inline void Bcp::MenuElegirCanalOSede(CuentaBancaria* cuenta)
 		}
 		case 1:
 		{
-			ListaDoble<Canal*>* canalesSinSedeDisponibles = buscarCanalesSinSede();
-			if (canalesSinSedeDisponibles->head == nullptr)
+			ArbolBinario<Canal*>* canalesSinSedeDisponibles = buscarCanalesSinSede();
+			if (canalesSinSedeDisponibles->getRaiz() == nullptr)
 			{
 				gotoxy(45, 22); cout << "No hay canales disponibles" << endl;
 				gotoxy(45, 23); cout << RED << system("pause") << RESET;
 				break;
 			}
 			vector<string> opcionesCanales;
-			for (int i = 0; i < canalesSinSedeDisponibles->getSize(); i++)
-			{
-				opcionesCanales.push_back(canalesSinSedeDisponibles->getByPosition(i)->data->getNombre());
-			}
+			NodoArbol<Canal*>* nodo = canalesSinSedeDisponibles->getRaiz();
+
+
+			// Lambda para insertar los datos del árbol en el vector
+			auto insertarEnVector = [&](auto& self, NodoArbol<Canal*>* nodo) {
+				if (nodo == nullptr)
+					return;
+				self(self, nodo->izquierda);
+				opcionesCanales.push_back(nodo->dato->getNombre());
+				self(self, nodo->derecha);
+				};
+
+			//llamar lambda
+			insertarEnVector(insertarEnVector, canalesSinSedeDisponibles->getRaiz());
 
 			auto callback1 = [canalesSinSedeDisponibles, &cuenta, this](int seleccion) {
-				Nodo<Canal*>* canal = canalesSinSedeDisponibles->getByPosition(seleccion);
+				NodoArbol<Canal*>* canal = canalesSinSedeDisponibles->buscar(seleccion);
 				if (canal != nullptr)
-					MenuOperacionPorCanal(canal->data, cuenta);
+					MenuOperacionPorCanal(canal->dato, cuenta);
 				return false;
 				};
+
 			crearMenu(opcionesCanales, callback1);
 			break;
 		}
@@ -1296,7 +1313,16 @@ void Bcp::MenuCanales()
 	auto callback = [&](int seleccion) {
 		switch (seleccion) {
 		case 0: //Listar todos los canales
-			canales->printPaginado();
+			canales->printTree(canales->getRaiz(), 1, [&](Canal* dato){
+				cout << "ID: " << dato->getId() << " - " << dato->getNombre() << endl;
+			});
+			cout << "-----------------------------------------------------------------" << endl;
+			canales->EnOrden([&](Canal* dato) {
+				dato->print();
+				cout << endl;
+				cout << "-----------------------------------------------------------------" << endl;
+				});
+			system("pause");
 			break;
 		case 1: //Listar los canales por tipo
 		{
@@ -1337,9 +1363,25 @@ void Bcp::MenuCanales()
 			auto searchByValue = [this, &tipo](Canal* canal) {
 				return canal->getTipoDeCanal() == tipo;
 				};
-			ListaDoble<Canal*>* temp = canales->searchMultipleByValue(searchByValue);
+			ArbolBinario<Canal*>* temp = canales->searchMultipleByValue(searchByValue);
 			if (temp != nullptr) {
-				if (temp->head != nullptr) temp->printPaginado(5);
+				if (temp->getRaiz() != nullptr) {
+					temp->printTree(temp->getRaiz(), 1, [&](Canal* dato) {
+						cout << "ID: " << dato->getId() << " - " << dato->getNombre() << endl;
+						});
+					cout << "-----------------------------------------------------------------" << endl;
+					temp->EnOrden([&](Canal* dato) {
+						dato->print();
+						cout << endl;
+						cout << "-----------------------------------------------------------------" << endl;
+						});
+					system("pause");
+				}
+				else 
+				{
+					cout << "No se encontraron canales con ese tipo" << endl;
+					system("pause");
+				}
 			}
 			else {
 				cout << "No se encontraron canales con ese tipo" << endl;
@@ -1369,9 +1411,25 @@ void Bcp::MenuCanales()
 			auto searchByValue = [this, &sede](Canal* canal) {
 				return canal->getIdSede() == sede->getId();
 				};
-			ListaDoble<Canal*>* temp = canales->searchMultipleByValue(searchByValue);
+			ArbolBinario<Canal*>* temp = canales->searchMultipleByValue(searchByValue);
 			if (temp != nullptr) {
-				if (temp->head != nullptr) temp->printPaginado(5);
+				if (temp->getRaiz() != nullptr) {
+					temp->printTree(temp->getRaiz(), 1, [&](Canal* dato) {
+						cout << "ID: " << dato->getId() << " - " << dato->getNombre() << endl;
+						});
+					cout << "-----------------------------------------------------------------" << endl;
+					temp->EnOrden([&](Canal* dato) {
+						dato->print();
+						cout << endl;
+						cout << "-----------------------------------------------------------------" << endl;
+						});
+					system("pause");
+				}
+				else
+				{
+					cout << "No se encontraron canales con ese tipo" << endl;
+					system("pause");
+				}
 			}
 			else {
 				cout << "No se encontraron canales con esa sede" << endl;
@@ -1440,10 +1498,12 @@ void Bcp::MenuCanales()
 			}
 
 			if (sede != nullptr) {
-				agregar<ListaDoble<Canal*>*, Canal>(new Canal(getNextId(canales), nombre, tipo, sede->getId()), canales);
+				canales->insertar(new Canal(getNextId(canales), nombre, tipo, sede->getId()));
+				canales->escribir();
 			}
 			else {
-				agregar<ListaDoble<Canal*>*, Canal>(new Canal(getNextId(canales), nombre, tipo, 0), canales);
+				canales->insertar(new Canal(getNextId(canales), nombre, tipo, 0));
+				canales->escribir();
 			}
 			break;
 		}
@@ -1452,18 +1512,24 @@ void Bcp::MenuCanales()
 			string nombre;
 			ETipoDeCanal tipo = OTROCANAL;
 			Sede* sede;
-			vector<string> opcionesCanal;
-			for (int i = 0; i < canales->getSize(); i++)
-			{
-				opcionesCanal.push_back(canales->getFormattedByPos([&](Canal* sede) { return to_string(sede->getId()) + " - " + sede->getNombre(); }, i));
-			}
+			vector<string> nombresCanales;
+			vector<Canal*> opcionesCanales;
+
+			//lambda
+			auto insertarEnVector = [&](Canal* dato) {
+				nombresCanales.push_back(dato->getNombre());
+				opcionesCanales.push_back(dato);
+				};
+
+			canales->EnOrden(insertarEnVector);
+
 			auto callback = [&](int seleccion) {
-				Nodo<Canal*>* canal = canales->getByPosition(seleccion);
+				Canal* canal = opcionesCanales[seleccion];
 				if (canal != nullptr)
 				{
 					vector<string> campos = { 
-						"Nombre " + canal->data->getNombre(),
-						"Tipo de Canal " + canal->data->getTipoDeCanalStr(),
+						"Nombre " + canal->getNombre(),
+						"Tipo de Canal " + canal->getTipoDeCanalStr(),
 						"Agregar a una sede", 
 						"Quitar de la sede"};
 					auto menuOpcionesEdditables = [&](int seleccion) {
@@ -1474,7 +1540,7 @@ void Bcp::MenuCanales()
 							vector<string> campoEditable;
 							campoEditable.push_back(campos[seleccion]);
 							auto callback = [&](vector<string> valores) {
-								canal->data->setNombre(valores[0]);
+								canal->setNombre(valores[0]);
 								return false;
 								};
 							crearFormulario(campoEditable, callback);
@@ -1489,22 +1555,22 @@ void Bcp::MenuCanales()
 							auto callback1 = [&](int seleccion) {
 								switch (seleccion) {
 								case 0:
-									canal->data->setTipoDeCanal(VENTANILLA);
+									canal->setTipoDeCanal(VENTANILLA);
 									break;
 								case 1:
-									canal->data->setTipoDeCanal(AGENTE);
+									canal->setTipoDeCanal(AGENTE);
 									break;
 								case 2:
-									canal->data->setTipoDeCanal(WEB);
+									canal->setTipoDeCanal(WEB);
 									break;
 								case 3:
-									canal->data->setTipoDeCanal(APP);
+									canal->setTipoDeCanal(APP);
 									break;
 								case 4:
-									canal->data->setTipoDeCanal(YAPE);
+									canal->setTipoDeCanal(YAPE);
 									break;
 								case 5:
-									canal->data->setTipoDeCanal(CAJERO);
+									canal->setTipoDeCanal(CAJERO);
 									break;
 								}
 								return false;
@@ -1526,7 +1592,7 @@ void Bcp::MenuCanales()
 									HashEntidadNodo<Sede*>* TempSede = hashSedes->getByPosition(seleccion);
 									if (TempSede != nullptr)
 									{
-										canal->data->setIdSede(TempSede->data->getId());
+										canal->setIdSede(TempSede->data->getId());
 									}
 									return false;
 									};
@@ -1539,14 +1605,15 @@ void Bcp::MenuCanales()
 							break;
 						}
 						case 3:
-							if (tipo != VENTANILLA && tipo != CAJERO) canal->data->setIdSede(0);
+							if (tipo != VENTANILLA && tipo != CAJERO) canal->setIdSede(0);
 							else {
 								cout << "Este canal no tiene sede" << endl;
 								system("pause");
 							}
 							break;
 						}
-						editar<ListaDoble<Canal*>*, Canal>(canal->data, canales);
+						canales->actualizar(canal);
+						canales->escribir();
 						cout << "Canal editado correctamente" << endl;
 						system("pause");
 
@@ -1559,71 +1626,114 @@ void Bcp::MenuCanales()
 				
 				return false;
 				};
-			crearMenu(opcionesCanal, callback);
+			crearMenu(nombresCanales, callback);
 			break;
 		}
 		case 5: //Eliminar un canal
 		{
-			vector<string> opcionesCanal;
-			for (int i = 0; i < canales->getSize(); i++)
-			{
-				opcionesCanal.push_back(canales->getFormattedByPos([&](Canal* sede) { return to_string(sede->getId()) + sede->getNombre(); }, i));
-			}
+			vector<string> nombresCanales;
+			vector<Canal*> opcionesCanales;
+
+			//lambda
+			auto insertarEnVector = [&](Canal* dato) {
+				nombresCanales.push_back(dato->getNombre());
+				opcionesCanales.push_back(dato);
+				};
+
+			canales->EnOrden(insertarEnVector);
+
 			auto callback = [&](int seleccion) {
-				Nodo<Canal*>* canal = canales->getByPosition(seleccion);
+				Canal* canal = opcionesCanales[seleccion];
 				if (canal != nullptr)
-					eliminar<ListaDoble<Canal*>*, Canal>(canal->data, canales);
+				{
+					canales->eliminar(canal);
+					canales->escribir();
+					cout << "Canal eliminado correctamente" << endl;
+					system("pause");
+				}
 				return false;
 				};
+
+			crearMenu(nombresCanales, callback);
 			break;
 		}
 		case 6: //Activar un canal
 		{
-			vector<string> opcionesCanal;
-			for (int i = 0; i < canales->getSize(); i++)
-			{
-				opcionesCanal.push_back(canales->getFormattedByPos([&](Canal* sede) { return to_string(sede->getId()) + sede->getNombre(); }, i));
-			}
+			vector<string> nombresCanales;
+			vector<Canal*> opcionesCanales;
+
+			//lambda
+			auto insertarEnVector = [&](Canal* dato) {
+				nombresCanales.push_back(dato->getNombre());
+				opcionesCanales.push_back(dato);
+				};
+
+			canales->EnOrden(insertarEnVector);
+
 			auto callback = [&](int seleccion) {
-				Nodo<Canal*>* canal = canales->getByPosition(seleccion);
+				Canal* canal = opcionesCanales[seleccion];
 				if (canal != nullptr)
 				{
-					canal->data->activar();
-					editar<ListaDoble<Canal*>*, Canal>(canal->data, canales);
+					canal->activar();
+					canales->escribir();
 				}
-
 				return false;
 				};
-			crearMenu(opcionesCanal, callback);
+
+			crearMenu(nombresCanales, callback);
 			break;
 		}
 		case 7: //Desactivar un canal
 		{
-			vector<string> opcionesCanal;
-			for (int i = 0; i < canales->getSize(); i++)
-			{
-				opcionesCanal.push_back(canales->getFormattedByPos([&](Canal* sede) { return to_string(sede->getId()) + sede->getNombre(); }, i));
-			}
+			vector<string> nombresCanales;
+			vector<Canal*> opcionesCanales;
+
+			//lambda
+			auto insertarEnVector = [&](Canal* dato) {
+				nombresCanales.push_back(dato->getNombre());
+				opcionesCanales.push_back(dato);
+				};
+
+			canales->EnOrden(insertarEnVector);
+
 			auto callback = [&](int seleccion) {
-				Nodo<Canal*>* canal = canales->getByPosition(seleccion);
+				Canal* canal = opcionesCanales[seleccion];
 				if (canal != nullptr)
 				{
-					canal->data->desactivar();
-					editar<ListaDoble<Canal*>*, Canal>(canal->data, canales);
+					canal->desactivar();
+					canales->escribir();
 				}
-
 				return false;
 				};
-			crearMenu(opcionesCanal, callback);
+
+			crearMenu(nombresCanales, callback);
 			break;
 		}
 		case 8: //Ordenar por nombre
-			Canal::ordenarPorNombre<ListaDoble<Canal*>*>(canales, true);
-			canales->printPaginado(5);
+			Canal::ordenarPorNombre<ArbolBinario<Canal*>*>(canales, true);
+			canales->printTree(canales->getRaiz(), 1, [&](Canal* dato) {
+				cout << "ID: " << dato->getId() << " - " << dato->getNombre() << endl;
+				});
+			cout << "-----------------------------------------------------------------" << endl;
+			canales->EnOrden([&](Canal* dato) {
+				dato->print();
+				cout << endl;
+				cout << "-----------------------------------------------------------------" << endl;
+				});
+			system("pause");
 			break;
 		case 9: //Ordenar por estado
-			Canal::ordenarPorEstado<ListaDoble<Canal*>*>(canales, true);
-			canales->printPaginado(5);
+			Canal::ordenarPorEstado<ArbolBinario<Canal*>*>(canales, true);
+			canales->printTree(canales->getRaiz(), 1, [&](Canal* dato) {
+				cout << "ID: " << dato->getId() << " - " << dato->getEstadoStr() << endl;
+				});
+			cout << "-----------------------------------------------------------------" << endl;
+			canales->EnOrden([&](Canal* dato) {
+				dato->print();
+				cout << endl;
+				cout << "-----------------------------------------------------------------" << endl;
+				});
+			system("pause");
 			break;
 		case 10:
 			return false;

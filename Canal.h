@@ -232,22 +232,22 @@ void Canal::print()
 }
 
 template <typename L>
-inline void Canal::ordenarPorNombre(L lista, bool ascendente)
+inline void Canal::ordenarPorNombre(L arbol, bool ascendente)
 {
 	auto compararNombres = [&](Canal* a, Canal* b) {
 		return ascendente ? a->getNombre() < b->getNombre() : a->getNombre() > b->getNombre();
 		};
 
-	lista->mergeSort(&lista->head, compararNombres);
+	arbol->ordenar(compararNombres);
 
 }
 
 template <typename L>
-inline void Canal::ordenarPorEstado(L lista, bool ascendente)
+inline void Canal::ordenarPorEstado(L arbol, bool ascendente)
 {
 	auto compararEstados = [&](Canal* a, Canal* b) {
 		return ascendente ? a->getEstado() < b->getEstado() : a->getEstado() > b->getEstado();
 		};
 
-	lista->mergeSort(&lista->head, compararEstados);
+	arbol->ordenar(compararEstados);
 }
