@@ -769,7 +769,7 @@ inline void ListaDoble<T>::agregar(T item) {
 	file.close();
 
 	//agregar item
-	ofstream file(path);
+	ofstream file(nombreArchivo);
 	if (!header) {
 		file << item->escribirCabecera() << "\n";
 	}

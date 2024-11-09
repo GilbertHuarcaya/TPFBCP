@@ -856,7 +856,7 @@ void HashTablaLista<T, KEY>::agregar(T item) {
 	file.close();
 
 	//agregar item
-	ofstream file(path);
+	ofstream file(nombreArchivo);
 	if (!header) {
 		file << item->escribirCabecera() << "\n";
 	}
@@ -892,13 +892,13 @@ void HashTablaLista<T, KEY>::editar(T item) {
 	}
 	file.close();
 	temp.close();
-	remove(path.c_str());
-	rename("temp.txt", path.c_str());
+	remove(nombreArchivo.c_str());
+	rename("temp.txt", nombreArchivo.c_str());
 }
 
 template<typename T, typename KEY>
 void HashTablaLista<T, KEY>::eliminar(T item) {
-	ifstream file(path);
+	ifstream file(nombreArchivo);
 	ofstream temp("temp.txt");
 	string line;
 	bool header = true;
@@ -921,6 +921,6 @@ void HashTablaLista<T, KEY>::eliminar(T item) {
 	}
 	file.close();
 	temp.close();
-	remove(path.c_str());
-	rename("temp.txt", path.c_str());
+	remove(nombreArchivo.c_str());
+	rename("temp.txt", nombreArchivo.c_str());
 }
