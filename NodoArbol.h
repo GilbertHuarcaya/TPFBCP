@@ -2,16 +2,16 @@
 template <class T>
 class NodoArbol {
 public:
-	T dato;
+	T data;
 	NodoArbol<T>* izquierda;
 	NodoArbol<T>* derecha;
-	NodoArbol(T dato)
+	NodoArbol(T data)
 	{
-		this->dato = dato;
+		this->data = data;
 		this->izquierda = nullptr;
 		this->derecha = nullptr;
 	}
-	void setDato(T dato) { this->dato = dato;}
+	void setDato(T data) { this->data = data;}
 	void setNodoIzq(NodoArbol<T>* izq) { this->izquierda = izq; }
 	void setNodoDer(NodoArbol<T>* der) { this->derecha = der; }
 };

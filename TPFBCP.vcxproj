@@ -127,6 +127,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ArbolBinario.h" />
+    <ClInclude Include="ArbolAVL.h" />
     <ClInclude Include="Bcp.h" />
     <ClInclude Include="Canal.h" />
     <ClInclude Include="Cliente.h" />
