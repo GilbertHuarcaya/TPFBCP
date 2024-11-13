@@ -1,6 +1,7 @@
 #pragma once
 #include "NodoArbol.h"
 #include "functional"
+#include "string"
 
 template <class T>
 class ArbolBinario {
@@ -34,7 +35,7 @@ public:
 	template <typename C>
 	ArbolBinario<T>* searchMultipleByValue(C callback);
 	template <typename C>
-	void printTree(NodoArbol<T>* nodo, int espacio, C callback);
+	void printTree(NodoArbol<T>* nodo, int espacio, C callback, string prefijo = "", bool esIzquierda = true);
 	int getSize();
 
 	template <typename C>
@@ -137,7 +138,7 @@ ArbolBinario<T>::ArbolBinario(string nombreArchivo)
 	this->nombreArchivo = nombreArchivo;
 	raiz = nullptr;
 	requisito_division = [](T a, T b) -> bool {
-		return false;
+		return a->getId() < b->getId();
 		};
 	total = 0;
 }
@@ -229,7 +230,7 @@ inline void ArbolBinario<T>::remover(int id)
 template <class T>
 void ArbolBinario<T>::PreOrden(function<void(T)> funcion)
 {
-	return _PreOrden(funcion, getRaiz());
+	return _PreOrden(funcion, raiz);
 }
 
 template <class T>
@@ -258,19 +259,27 @@ inline NodoArbol<T>* ArbolBinario<T>::buscar(T adato)
 
 template <class T>
 template <typename C>
-void ArbolBinario<T>::printTree(NodoArbol<T>* nodo, int espacio, C callback)
+void ArbolBinario<T>::printTree(NodoArbol<T>* nodo, int espacio, C callback, string prefijo, bool esIzquierda)
 {
 	if (nodo == nullptr)
 	{
 		return;
 	}
-	espacio += 10;
-	printTree(nodo->derecha, espacio, callback);
-	cout << endl;
-	for (int i = 10; i < espacio; i++)
-		cout << " ";
+
+	// Imprimir el nodo actual
+	cout << prefijo;
+	if (prefijo.empty()) {
+		cout << "|-R-";
+	}
+	else {
+		cout << (esIzquierda ? "|-I-" : "|-D-");
+	}
 	callback(nodo->dato);
-	printTree(nodo->izquierda, espacio, callback);
+	cout << endl;
+
+	// Procesar el subárbol izquierdo y derecho
+	printTree(nodo->izquierda, espacio, callback, prefijo + (esIzquierda ? "| " : "  "), true);
+	printTree(nodo->derecha, espacio, callback, prefijo + (esIzquierda ? "| " : "  "), false);
 }
 
 template<class T>

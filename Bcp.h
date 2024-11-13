@@ -12,6 +12,7 @@
 #include "vector"
 #include "HashTablaLista.h"
 #include "ArbolBinario.h"
+#include "ArbolAVL.h"
 #include "iostream"
 
 using namespace std;
@@ -28,7 +29,6 @@ class Bcp
 private:
 	string nombre;
 	ListaDoble<CuentaBancaria*>* cuentas;
-	ListaDoble<Tarjeta*>* tarjetas;
 	ListaDoble<Operacion*>* operaciones;
 
 	Cola<Operacion*>* colaOperaciones;
@@ -37,12 +37,13 @@ private:
 	HashTablaLista<Sede*>* hashSedes;
 
 	ArbolBinario<Canal*>* canales;
+
+	ArbolAVL<Tarjeta*>* tarjetas;
 public:
 	Bcp()
 	{
 		this->nombre = "Banco de Credito del Peru";
 		cuentas = new ListaDoble<CuentaBancaria*>("Datos/Cuentas.csv");
-		tarjetas = new ListaDoble<Tarjeta*>("Datos/Tarjetas.csv");
 		operaciones = new ListaDoble<Operacion*>("Datos/Operaciones.csv");
 		colaOperaciones = new Cola<Operacion*>("Datos/ColaOperaciones.csv");
 
@@ -52,6 +53,7 @@ public:
 		//Arboles
 		canales = new ArbolBinario<Canal*>([&](Canal* a, Canal* b) {return a->getId() > b->getId(); }, "Datos/Canales.csv");
 
+		tarjetas = new ArbolAVL<Tarjeta*>("Datos/Tarjetas.csv");
 
 		loadAll();
 	}
@@ -275,7 +277,7 @@ void Bcp::reload(T lista)
 void Bcp::loadAll()
 {
 	load<ListaDoble<CuentaBancaria*>*, CuentaBancaria>(cuentas);
-	load<ListaDoble<Tarjeta*>*, Tarjeta>(tarjetas);
+	load<ArbolAVL<Tarjeta*>*, Tarjeta>(tarjetas);
 	load<ListaDoble<Operacion*>*, Operacion>(operaciones);
 	load<ArbolBinario<Canal*>*, Canal>(canales);
 
@@ -287,7 +289,7 @@ void Bcp::loadAll()
 void Bcp::reloadAll()
 {
 	reload<ListaDoble<CuentaBancaria*>*, CuentaBancaria>(cuentas);
-	reload<ListaDoble<Tarjeta*>*, Tarjeta>(tarjetas);
+	reload<ArbolAVL<Tarjeta*>*, Tarjeta>(tarjetas);
 	reload<ListaDoble<Operacion*>*, Operacion>(operaciones);
 	reload<ArbolBinario<Canal*>*, Canal>(canales);
 
@@ -901,7 +903,8 @@ void Bcp::MenuSoloCuentaBancaria(CuentaBancaria* CuentaB)
 			{
 				Tarjeta* auxiliar = new Tarjeta(this->tarjetas->getNextId(), CuentaB->getIdCliente(), CuentaB->getId());
 				CuentaB->setTarjeta(auxiliar);
-				agregar(auxiliar, tarjetas);
+				tarjetas->insertar(auxiliar);
+				tarjetas->escribir();
 				gotoxy(40, 12); cout << "Tarjeta aniadida correctamente";
 				gotoxy(40, 13); system("pause");
 			}
@@ -912,11 +915,12 @@ void Bcp::MenuSoloCuentaBancaria(CuentaBancaria* CuentaB)
 		{
 			Console::Clear();
 			LogoBCP(18, 1);
-			Tarjeta* auxiliar = buscar<ListaDoble<Tarjeta*>*, Tarjeta>(CuentaB->getTarjeta()->getId(), tarjetas);
+			Tarjeta* auxiliar = tarjetas->buscar(CuentaB->getTarjeta()->getId())->dato;
 			if (auxiliar != nullptr)
 			{
 				CuentaB->borrarTarjeta();
-				eliminar(auxiliar, tarjetas);
+				tarjetas->BorrarPorId(auxiliar->getId());
+				tarjetas->escribir();
 				gotoxy(40, 12); cout << "La tarjeta ha sido removida correctamente";
 				system("pause");
 				break;
@@ -933,7 +937,8 @@ void Bcp::MenuSoloCuentaBancaria(CuentaBancaria* CuentaB)
 			{
 				Tarjeta* auxiliar = new Tarjeta(this->tarjetas->getNextId(), CuentaB->getIdCliente(), CuentaB->getId());
 				CuentaB->setTarjeta(auxiliar);
-				agregar(auxiliar, tarjetas);
+				tarjetas->insertar(auxiliar);
+				tarjetas->escribir();
 				gotoxy(40, 12); cout << "Tarjeta renovada correctamente";
 				gotoxy(40, 13); system("pause");
 			}
@@ -2141,7 +2146,7 @@ void Bcp::MenuClientes()
 			{
 				Console::Clear();
 				LogoBCP(18, 1);
-				gotoxy(40, 12); cout << "Ingrese el id del cliente a eliminar";
+				gotoxy(40, 12); cout << "Ingrese el id del cliente del que desea eliminar la tarjeta";
 				gotoxy(40, 13); cin >> id;
 				Cliente* aux = buscar<HashTablaLista<Cliente*>*, Cliente>(id, hashClientes);
 				if (aux == nullptr)
@@ -2157,7 +2162,7 @@ void Bcp::MenuClientes()
 				{
 					if (auxCB->data->getIdCliente() == aux->getId())
 					{
-						eliminar<ListaDoble<Tarjeta*>*, Tarjeta>(auxCB->data->getTarjeta(), tarjetas);
+						tarjetas->BorrarPorId(auxCB->data->getTarjeta()->getId());
 						eliminar<ListaDoble<CuentaBancaria*>*, CuentaBancaria>(auxCB->data, cuentas);
 					}
 					auxCB = auxCB->next;
@@ -2372,7 +2377,8 @@ void Bcp::MenuCuentas()
 			Tarjeta* tarjeta = aux->getTarjeta();
 			if (tarjeta != nullptr)
 			{
-				eliminar(tarjeta, tarjetas);
+				tarjetas->BorrarPorId(tarjeta->getId());
+				tarjetas->escribir();
 				aux->borrarTarjeta();
 			}
 			eliminar(aux, cuentas);
@@ -2415,31 +2421,40 @@ void Bcp::MenuTarjetas()
 		case 0:
 			Console::Clear();
 			LogoBCP(18, 1);
-			gotoxy(0, 12); tarjetas->printPaginado();
+			gotoxy(0, 12);
+			tarjetas->printTree(tarjetas->getRaiz(), 1, [&](Tarjeta* dato) {
+				cout << "ID: " << dato->getId() << " - " << dato->getNumero() << " - " << dato->getFechaVencimientoStr() << endl;
+				});
+			cout << "-----------------------------------------------------------------" << endl;
+			tarjetas->EnOrden([&](Tarjeta* dato) {
+				dato->print();
+				cout << endl;
+				cout << "-----------------------------------------------------------------" << endl;
+				});
 			system("pause");
 			break;
 		case 1:
 		{
-			function<bool(Tarjeta*, Tarjeta*)> comparacion = [&](Tarjeta* aux1, Tarjeta* aux2)->bool {
+			auto comparacion = [&](Tarjeta* aux1, Tarjeta* aux2) {
 				return aux1->getFechaVencimiento() > aux2->getFechaVencimiento();
 				};
-			tarjetas->QuickSort(comparacion, 0, tarjetas->getSize() - 1);
+			tarjetas->ordenar(comparacion);
 			break;
 		}
 		case 2:
 		{
-			function<bool(Tarjeta*, Tarjeta*)> comparacion = [&](Tarjeta* aux1, Tarjeta* aux2)->bool {
+			auto comparacion = [&](Tarjeta* aux1, Tarjeta* aux2) {
 				return aux1->getFechaVencimiento() < aux2->getFechaVencimiento();
 				};
-			tarjetas->QuickSort(comparacion, 0, tarjetas->getSize() - 1);
+			tarjetas->ordenar(comparacion);
 			break;
 		}
 		case 3:
 		{
-			function<bool(Tarjeta*, Tarjeta*)> comparacion = [&](Tarjeta* aux1, Tarjeta* aux2)->bool {
+			auto comparacion = [&](Tarjeta* aux1, Tarjeta* aux2) {
 				return aux1->getFechaCreacion() > aux2->getFechaCreacion();
 			};
-			tarjetas->QuickSort(comparacion, 0, tarjetas->getSize() - 1);
+			tarjetas->ordenar(comparacion);
 			break;
 		}
 		case 4:
@@ -2463,7 +2478,8 @@ void Bcp::MenuTarjetas()
 					{
 						Tarjeta* auxiliar = new Tarjeta(this->tarjetas->getNextId(), aux_CB->data->getIdCliente(), aux->getId());
 						aux_CB->data->setTarjeta(auxiliar);
-						agregar(auxiliar, tarjetas);
+						tarjetas->insertar(auxiliar);
+						tarjetas->escribir();
 						gotoxy(40, 12); cout << "Tarjeta aniadida correctamente";
 						gotoxy(40, 13); system("pause");
 					}
@@ -2498,18 +2514,20 @@ void Bcp::MenuTarjetas()
 			LogoBCP(18, 1);
 			gotoxy(40, 12); cout << "Ingrese el id de la tarjeta a editar";
 			gotoxy(40, 13); cin >> id;
-			Tarjeta* aux = buscar<ListaDoble<Tarjeta*>*, Tarjeta>(id, tarjetas);
+			NodoArbol<Tarjeta*>* nodoTarjeta = tarjetas->buscar(id);
 			Console::Clear();
 			LogoBCP(18, 1);
-			if (aux == nullptr)
+			if (nodoTarjeta == nullptr)
 			{
 				gotoxy(40, 12); cout << "No se encontro la tarjeta";
 				gotoxy(40, 13); system("pause");
 				break;
 			}
+			Tarjeta* aux = nodoTarjeta->dato;
 			Random r(time(NULL));
 			aux->setCvv(to_string(r.Next(101,1000)-1));
-			editar(aux, tarjetas);
+			tarjetas->actualizar(aux);
+			tarjetas->escribir();
 			gotoxy(40, 12); cout << "Cvv de la tarjeta editada correctamente";
 			gotoxy(40, 13); system("pause");
 			break;
@@ -2520,8 +2538,8 @@ void Bcp::MenuTarjetas()
 			LogoBCP(18, 1);
 			gotoxy(40, 12); cout << "Ingrese el id de la tarjeta";
 			gotoxy(40, 13); cin >> id;
-			Tarjeta* tarjeta = buscar<ListaDoble<Tarjeta*>*, Tarjeta>(id, tarjetas);
-			if (tarjeta == nullptr)
+			NodoArbol<Tarjeta*>* nodoTarjeta = tarjetas->buscar(id);
+			if (nodoTarjeta == nullptr)
 			{
 				Console::Clear();
 				LogoBCP(18, 1);
@@ -2529,6 +2547,7 @@ void Bcp::MenuTarjetas()
 				gotoxy(40, 13); system("pause");
 				break;
 			}
+			Tarjeta* tarjeta = nodoTarjeta->dato;
 			tarjeta->print();
 			system("pause");
 			break;
@@ -2539,26 +2558,26 @@ void Bcp::MenuTarjetas()
 			LogoBCP(18, 1);
 			gotoxy(40, 12); cout << "Ingrese el id de la tarjeta a eliminar";
 			gotoxy(40, 13); cin >> id;
-			Tarjeta* aux = buscar<ListaDoble<Tarjeta*>*, Tarjeta>(id, tarjetas);
-			if (aux == nullptr) {
+			NodoArbol<Tarjeta*>* nodoTarjeta = tarjetas->buscar(id);
+			if (nodoTarjeta == nullptr) {
 				Console::Clear();
 				LogoBCP(18, 1);
 				gotoxy(40, 12); cout << "No se encontro la tarjeta";
 				gotoxy(40, 13); system("pause");
 				break;
 			}
+			Tarjeta* aux = nodoTarjeta->dato;
 			CuentaBancaria* aux_cuenta = buscar<ListaDoble<CuentaBancaria*>*, CuentaBancaria>(aux->getIdCuentaBancaria(), cuentas);
 
 			if (aux_cuenta != nullptr)
 			{
-				Tarjeta* tarjeta = buscar<ListaDoble<Tarjeta*>*, Tarjeta>(id, tarjetas);
-				if (tarjeta != nullptr)
+				if (aux != nullptr)
 				{
 					aux_cuenta->borrarTarjeta();
 				}
 			}
-
-			eliminar(aux, tarjetas); //a tomar en cuenta que debemos validar si queremos que se eliminen si o si del csv o si queremos que se mantengan ahi
+			tarjetas->BorrarPorId(aux->getId());	
+			tarjetas->escribir(); //a tomar en cuenta que debemos validar si queremos que se eliminen si o si del csv o si queremos que se mantengan ahi
 			Console::Clear();
 			LogoBCP(18, 1);
 			gotoxy(40, 12); cout << "Tarjeta eliminada correctamente";
