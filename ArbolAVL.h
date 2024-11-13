@@ -18,21 +18,18 @@ private:
 	void _EnOrden(function<void(T)> funcion, NodoArbol<T>* nodo);
 	void _PostOrden(function<void(T)> funcion, NodoArbol<T>* nodo);
 	NodoArbol<T>* _buscar(int id, NodoArbol<T>* aux);
-public:
-	ArbolAVL(string nombreArchivo = "");
-	ArbolAVL(function<bool(T, T)> funcion, string nombreArchivo = "");
-
-	void insertar(T dato);
-
-	bool EstaVacio();
-	int Altura(NodoArbol<T>* raiz);
-	int ObtFactorEquil(NodoArbol<T>* raiz);
-
 	NodoArbol<T>* RotarDer(NodoArbol<T>* y);
 	NodoArbol<T>* RotarIzq(NodoArbol<T>* x);
 	NodoArbol<T>* Insertar(NodoArbol<T>* raiz, NodoArbol<T>* nuevo);
 	NodoArbol<T>* ValorIzq(NodoArbol<T>* raiz);
 	NodoArbol<T>* Borrar(NodoArbol<T>* raiz, T valor);
+	int ObtFactorEquil(NodoArbol<T>* raiz);
+public:
+	ArbolAVL(string nombreArchivo = "");
+	ArbolAVL(function<bool(T, T)> funcion, string nombreArchivo = "");
+
+	bool EstaVacio();
+	int Altura(NodoArbol<T>* raiz);
 
 	void ImpPreorden(NodoArbol<T>* raiz);
 	void ImpEnorden(NodoArbol<T>* raiz);
@@ -40,18 +37,30 @@ public:
 
 	NodoArbol<T>* BuscaRecursiva(NodoArbol<T>* raiz, T valor);
 
+	//insertar
+	void insertar(T data);
+
+	//eliminar
+	void removeElement(NodoArbol<T>* nodo);
+	void removeElement(T data);
+	void removeElement(int id);
+
+	//actualizar solo la data
+	void updateElement(T data);
+	void updateElement(T data, int id);
+
+	//buscar
+	NodoArbol<T>* search(int id);
+	NodoArbol<T>* search(T data);
+	template <typename C>
+	ArbolAVL<T>* searchMultipleByValue(C callback);
+
 	template <typename C>
 	void printTree(NodoArbol<T>* nodo, int espacio, C callback, string prefijo = "", bool esIzquierda = true);
+
 	NodoArbol<T>* getRaiz();
 	int getSize();
 
-	void actualizar(T dato);
-	void BorrarPorId(int id);
-
-	NodoArbol<T>* buscar(int id);
-	NodoArbol<T>* buscar(T adato);
-	template <typename C>
-	ArbolAVL<T>* searchMultipleByValue(C callback);
 
 	void PreOrden(function<void(T)> funcion);
 	void EnOrden(function<void(T)> funcion);
@@ -89,9 +98,9 @@ inline ArbolAVL<T>::ArbolAVL(function<bool(T, T)> funcion, string nombreArchivo)
 }
 
 template<class T>
-inline void ArbolAVL<T>::insertar(T dato)
+inline void ArbolAVL<T>::insertar(T data)
 {
-	NodoArbol<T>* nuevaRaiz = Insertar(root, new NodoArbol<T>(dato));
+	NodoArbol<T>* nuevaRaiz = Insertar(root, new NodoArbol<T>(data));
 	root = nuevaRaiz;
 }
 
@@ -162,10 +171,10 @@ NodoArbol<T>* ArbolAVL<T>::Insertar(NodoArbol<T>* raiz, NodoArbol<T>* nuevo) {
 		nextId++;
 		return raiz;
 	}
-	if (requisito_division(nuevo->dato, raiz->dato)) {
+	if (requisito_division(nuevo->data, raiz->data)) {
 		raiz->izquierda = Insertar(raiz->izquierda, nuevo);
 	}
-	else if (requisito_division(raiz->dato, nuevo->dato)) {
+	else if (requisito_division(raiz->data, nuevo->data)) {
 		raiz->derecha = Insertar(raiz->derecha, nuevo);
 	}
 	else {
@@ -177,20 +186,20 @@ NodoArbol<T>* ArbolAVL<T>::Insertar(NodoArbol<T>* raiz, NodoArbol<T>* nuevo) {
 	}
 	int FE = ObtFactorEquil(raiz);
 	//CASO LL
-	if (FE > 1 && requisito_division(nuevo->dato, raiz->izquierda->dato)) {
+	if (FE > 1 && requisito_division(nuevo->data, raiz->izquierda->data)) {
 		return RotarDer(raiz);
 	}
 	//CASO RR
-	if (FE < -1 && requisito_division(raiz->derecha->dato, nuevo->dato)) {
+	if (FE < -1 && requisito_division(raiz->derecha->data, nuevo->data)) {
 		return RotarIzq(raiz);
 	}
 	//CASO LR
-	if (FE > 1 && requisito_division(raiz->izquierda->dato, nuevo->dato)) {
+	if (FE > 1 && requisito_division(raiz->izquierda->data, nuevo->data)) {
 		raiz->izquierda = RotarIzq(raiz->izquierda);
 		return RotarDer(raiz);
 	}
 	//CASO RL
-	if (FE < -1 && requisito_division(nuevo->dato, raiz->derecha->dato)) {
+	if (FE < -1 && requisito_division(nuevo->data, raiz->derecha->data)) {
 		raiz->derecha = RotarDer(raiz->derecha);
 		return RotarIzq(raiz);
 	}
@@ -212,10 +221,10 @@ NodoArbol<T>* ArbolAVL<T>::Borrar(NodoArbol<T>* raiz, T valor) {
 	if (raiz == nullptr) {
 		return nullptr;
 	}
-	else if (requisito_division(valor, raiz->dato)) {
+	else if (requisito_division(valor, raiz->data)) {
 		raiz->izquierda = Borrar(raiz->izquierda, valor);
 	}
-	else if (requisito_division(raiz->dato, valor)) {
+	else if (requisito_division(raiz->data, valor)) {
 		raiz->derecha = Borrar(raiz->derecha, valor);
 	}
 	else {
@@ -233,8 +242,8 @@ NodoArbol<T>* ArbolAVL<T>::Borrar(NodoArbol<T>* raiz, T valor) {
 		}
 		else {
 			NodoArbol<T>* temp = ValorIzq(raiz->derecha);
-			raiz->dato = temp->dato;
-			raiz->derecha = Borrar(raiz->derecha, temp->dato);
+			raiz->data = temp->data;
+			raiz->derecha = Borrar(raiz->derecha, temp->data);
 		}
 	}
 	int FE = ObtFactorEquil(raiz);
@@ -255,16 +264,6 @@ NodoArbol<T>* ArbolAVL<T>::Borrar(NodoArbol<T>* raiz, T valor) {
 	return raiz;
 }
 
-
-template<class T>
-inline void ArbolAVL<T>::BorrarPorId(int id)
-{
-	NodoArbol<T>* nodo = buscar(id);
-	if (nodo != nullptr) {
-		root = Borrar(root, nodo->dato);
-	}
-}
-
 template<class T>
 template <typename C>
 inline void ArbolAVL<T>::printTree(NodoArbol<T>* nodo, int espacio, C callback, string prefijo, bool esIzquierda)
@@ -281,7 +280,7 @@ inline void ArbolAVL<T>::printTree(NodoArbol<T>* nodo, int espacio, C callback, 
     } else {
 		cout << (esIzquierda ? "|-I-" : "|-D-");
     }
-    callback(nodo->dato);
+    callback(nodo->data);
     cout << endl;
 
     // Procesar el subárbol izquierdo y derecho
@@ -295,24 +294,12 @@ inline NodoArbol<T>* ArbolAVL<T>::getRaiz()
 	return root;
 }
 
-template<class T>
-inline void ArbolAVL<T>::actualizar(T dato)
-{
-	NodoArbol<T>* nodo = _buscar(dato->getId(), root);
-	if (nodo != nullptr) {
-		nodo->dato = dato;
-	}
-	else {
-		insertar(dato);
-	}
-}
-
 template <class T>
 void ArbolAVL<T>::ImpPreorden(NodoArbol<T>* raiz) {
 	if (raiz == nullptr) {
 		return;
 	}
-	cout << raiz->dato << " ";
+	cout << raiz->data << " ";
 	ImpPreorden(raiz->izquierda);
 	ImpPreorden(raiz->derecha);
 }
@@ -323,7 +310,7 @@ void ArbolAVL<T>::ImpEnorden(NodoArbol<T>* raiz) {
 		return;
 	}
 	ImpEnorden(raiz->izquierda);
-	cout << raiz->dato << " ";
+	cout << raiz->data << " ";
 	ImpEnorden(raiz->derecha);
 }
 
@@ -334,7 +321,7 @@ void ArbolAVL<T>::ImpPostorden(NodoArbol<T>* raiz) {
 	}
 	ImpPostorden(raiz->izquierda);
 	ImpPostorden(raiz->derecha);
-	cout << raiz->dato << " ";
+	cout << raiz->data << " ";
 }
 
 
@@ -342,8 +329,8 @@ template <class T>
 void ArbolAVL<T>::_PreOrden(function<void(T)> funcion, NodoArbol<T>* nodo)
 {
 	if (nodo == nullptr)return;
-	if (nodo->dato == nullptr)return;
-	funcion(nodo->dato);
+	if (nodo->data == nullptr)return;
+	funcion(nodo->data);
 	_PreOrden(funcion, nodo->izquierda);
 	_PreOrden(funcion, nodo->derecha);
 }
@@ -353,7 +340,7 @@ void ArbolAVL<T>::_EnOrden(function<void(T)> funcion, NodoArbol<T>* nodo)
 {
 	if (nodo == nullptr)return;
 	_EnOrden(funcion, nodo->izquierda);
-	funcion(nodo->dato);
+	funcion(nodo->data);
 	_EnOrden(funcion, nodo->derecha);
 }
 
@@ -363,14 +350,14 @@ void ArbolAVL<T>::_PostOrden(function<void(T)> funcion, NodoArbol<T>* nodo)
 	if (nodo == nullptr)return;
 	_PostOrden(funcion, nodo->izquierda);
 	_PostOrden(funcion, nodo->derecha);
-	funcion(nodo->dato);
+	funcion(nodo->data);
 }
 
 template<class T>
 inline NodoArbol<T>* ArbolAVL<T>::_buscar(int id, NodoArbol<T>* aux)
 {
 	if (aux != nullptr) {
-		if (aux->dato->getId() != id)
+		if (aux->data->getId() != id)
 		{
 			if (_buscar(id, aux->izquierda) != nullptr)
 				return _buscar(id, aux->izquierda);
@@ -384,15 +371,15 @@ inline NodoArbol<T>* ArbolAVL<T>::_buscar(int id, NodoArbol<T>* aux)
 }
 
 template<class T>
-inline NodoArbol<T>* ArbolAVL<T>::buscar(int id)
+inline NodoArbol<T>* ArbolAVL<T>::search(int id)
 {
 	return _buscar(id, root);
 }
 
 template<class T>
-inline NodoArbol<T>* ArbolAVL<T>::buscar(T adato)
+inline NodoArbol<T>* ArbolAVL<T>::search(T adata)
 {
-	return _buscar(adato->getId(), root);
+	return _buscar(adata->getId(), root);
 }
 
 template <class T>
@@ -416,14 +403,56 @@ void ArbolAVL<T>::PostOrden(function<void(T)> funcion)
 
 template <class T>
 NodoArbol<T>* ArbolAVL<T>::BuscaRecursiva(NodoArbol<T>* raiz, T valor) {
-	if (raiz == nullptr || raiz->dato == valor) {
+	if (raiz == nullptr || raiz->data == valor) {
 		return raiz;
 	}
-	else if (valor < raiz->dato) {
+	else if (valor < raiz->data) {
 		BuscaRecursiva(raiz->izquierda, valor);
 	}
 	else {
 		BuscaRecursiva(raiz->derecha, valor);
+	}
+}
+
+template<class T>
+inline void ArbolAVL<T>::removeElement(NodoArbol<T>* nodo)
+{
+	root = Borrar(root, nodo->data);
+}
+
+template<class T>
+inline void ArbolAVL<T>::removeElement(T data)
+{
+	root = Borrar(root, data);
+}
+
+template<class T>
+inline void ArbolAVL<T>::removeElement(int id)
+{
+	NodoArbol<T>* nodo = buscar(id);
+	if (nodo != nullptr) {
+		root = Borrar(root, nodo->data);
+	}
+}
+
+template<class T>
+inline void ArbolAVL<T>::updateElement(T data)
+{
+	NodoArbol<T>* nodo = _buscar(data->getId(), root);
+	if (nodo != nullptr) {
+		nodo->data = data;
+	}
+	else {
+		insertar(data);
+	}
+}
+
+template<class T>
+inline void ArbolAVL<T>::updateElement(T data, int id)
+{
+	NodoArbol<T>* nodo = _buscar(id, root);
+	if (nodo != nullptr) {
+		nodo->data = data;
 	}
 }
 
@@ -443,12 +472,12 @@ template <class T>
 void ArbolAVL<T>::escribir() {
 	ofstream file(nombreArchivo);
 	bool header = true;
-	function<void(T)> escribirNodo = [&](T dato) {
+	function<void(T)> escribirNodo = [&](T data) {
 		if (header) {
-			file << dato->escribirCabecera() << "\n";
+			file << data->escribirCabecera() << "\n";
 			header = false;
 		}
-		file << dato->escribirLinea() << "\n";
+		file << data->escribirLinea() << "\n";
 	};
 	PreOrden(escribirNodo);
 	file.close();
@@ -485,7 +514,7 @@ void ArbolAVL<T>::recargar() {
 		data->leerLinea(line);
 		NodoArbol<T>* nodo = _buscar(data->getId(), root);
 		if (nodo != nullptr) {
-			nodo->dato = data;
+			nodo->data = data;
 		} else {
 			insertar(data);
 		}
@@ -527,7 +556,7 @@ void ArbolAVL<T>::editar(T item) {
 	rename("temp.csv", nombreArchivo.c_str());
 	NodoArbol<T>* nodo = BuscaRecursiva(root, item->getId());
 	if (nodo != nullptr) {
-		nodo->dato = item;
+		nodo->data = item;
 	}
 }
 
@@ -561,9 +590,9 @@ template<typename C>
 inline ArbolAVL<T>* ArbolAVL<T>::searchMultipleByValue(C callback)
 {
 	ArbolAVL<T>* result = new ArbolAVL<T>("");
-	function<void(T)> buscar = [&](T dato) {
-		if (callback(dato)) {
-			result->insertar(dato);
+	function<void(T)> buscar = [&](T data) {
+		if (callback(data)) {
+			result->insertar(data);
 		}
 		};
 	EnOrden(buscar);
@@ -574,8 +603,8 @@ template <class T>
 template<typename C>
 void ArbolAVL<T>::ordenar(C callback) {
 	ArbolAVL<T>* result = new ArbolAVL<T>(callback);
-	EnOrden([&](T dato) {
-		result->insertar(dato);
+	EnOrden([&](T data) {
+		result->insertar(data);
 		});
 	this->root = result->root;
 	this->requisito_division = result->requisito_division;

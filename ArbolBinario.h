@@ -12,7 +12,7 @@ private:
 	int total;
 	int nextId = 1;
 	int _altura(NodoArbol<T>* nodo);
-	void _insertar(T dato, NodoArbol<T>*& nodo);
+	void _insertar(T data, NodoArbol<T>*& nodo);
 	void _PreOrden(function<void(T)> funcion, NodoArbol<T>* nodo);
 	void _EnOrden(function<void(T)> funcion, NodoArbol<T>* nodo);
 	void _PostOrden(function<void(T)> funcion, NodoArbol<T>* nodo);
@@ -20,20 +20,32 @@ private:
 public:
 	ArbolBinario(string nombreArchivo = "");
 	ArbolBinario(function<bool(T, T)> funcion, string nombreArchivo = "");
-	ArbolBinario(T dato, function<bool(T, T)> funcion, string nombreArchivo = "");
+	ArbolBinario(T data, function<bool(T, T)> funcion, string nombreArchivo = "");
 	NodoArbol<T>* getRaiz();
 	int altura();
-	void insertar(T dato);
-	void actualizar(T dato);
-	void remover(T dato);
-	void remover(int id);
+	//insertar
+	void insertar(T data);
+
+	//eliminar
+	void removeElement(NodoArbol<T>* nodo);
+	void removeElement(T data);
+	void removeElement(int id);
+
+	//actualizar solo la data
+	void updateElement(T data);
+	void updateElement(T data, int id);
+
+	//buscar
+	NodoArbol<T>* search(int id);
+	NodoArbol<T>* search(T adata);
+	template <typename C>
+	ArbolBinario<T>* searchMultipleByValue(C callback);
+
 	void PreOrden(function<void(T)> funcion);
 	void EnOrden(function<void(T)> funcion);
 	void PostOrden(function<void(T)> funcion);
-	NodoArbol<T>* buscar(int id);
-	NodoArbol<T>* buscar(T adato);
-	template <typename C>
-	ArbolBinario<T>* searchMultipleByValue(C callback);
+
+
 	template <typename C>
 	void printTree(NodoArbol<T>* nodo, int espacio, C callback, string prefijo = "", bool esIzquierda = true);
 	int getSize();
@@ -65,23 +77,23 @@ int ArbolBinario<T>::_altura(NodoArbol<T>* nodo)
 }
 
 template <class T>
-void ArbolBinario<T>::_insertar(T dato, NodoArbol<T>*& nodo)
+void ArbolBinario<T>::_insertar(T data, NodoArbol<T>*& nodo)
 {
 	if (nodo != nullptr)
 	{
 		NodoArbol<T>* aux;
-		if (requisito_division(dato, nodo->dato))
+		if (requisito_division(data, nodo->data))
 		{
-			return _insertar(dato, nodo->izquierda);
+			return _insertar(data, nodo->izquierda);
 		}
 		else
 		{
-			return _insertar(dato, nodo->derecha);
+			return _insertar(data, nodo->derecha);
 		}
 	}
 	else
 	{
-		nodo = new NodoArbol<T>(dato);
+		nodo = new NodoArbol<T>(data);
 		total++;
 		nextId++;
 	}
@@ -91,8 +103,8 @@ template <class T>
 void ArbolBinario<T>::_PreOrden(function<void(T)> funcion, NodoArbol<T>* nodo)
 {
 	if (nodo == nullptr)return;
-	if (nodo->dato == nullptr)return;
-	funcion(nodo->dato);
+	if (nodo->data == nullptr)return;
+	funcion(nodo->data);
 	_PreOrden(funcion, nodo->izquierda);
 	_PreOrden(funcion, nodo->derecha);
 }
@@ -102,7 +114,7 @@ void ArbolBinario<T>::_EnOrden(function<void(T)> funcion, NodoArbol<T>* nodo)
 {
 	if (nodo == nullptr)return;
 	_EnOrden(funcion, nodo->izquierda);
-	funcion(nodo->dato);
+	funcion(nodo->data);
 	_EnOrden(funcion, nodo->derecha);
 }
 
@@ -112,14 +124,14 @@ void ArbolBinario<T>::_PostOrden(function<void(T)> funcion, NodoArbol<T>* nodo)
 	if (nodo == nullptr)return;
 	_PostOrden(funcion, nodo->izquierda);
 	_PostOrden(funcion, nodo->derecha);
-	funcion(nodo->dato);
+	funcion(nodo->data);
 }
 
 template<class T>
 inline NodoArbol<T>* ArbolBinario<T>::_buscar(int id, NodoArbol<T>* aux)
 {
 	if (aux != nullptr) {
-		if (aux->dato->getId() != id)
+		if (aux->data->getId() != id)
 		{
 			if (_buscar(id, aux->izquierda) != nullptr)
 				return _buscar(id, aux->izquierda);
@@ -153,10 +165,10 @@ ArbolBinario<T>::ArbolBinario(function<bool(T, T)> funcion, string nombreArchivo
 }
 
 template <class T>
-ArbolBinario<T>::ArbolBinario(T dato, function<bool(T, T)> funcion, string nombreArchivo = "")
+ArbolBinario<T>::ArbolBinario(T data, function<bool(T, T)> funcion, string nombreArchivo = "")
 {
 	this->nombreArchivo = nombreArchivo;
-	raiz = new NodoArbol<T>(dato);
+	raiz = new NodoArbol<T>(data);
 	requisito_division = funcion;
 	total = 1;
 }
@@ -171,31 +183,25 @@ int ArbolBinario<T>::altura()
 }
 
 template <class T>
-void ArbolBinario<T>::insertar(T dato)
+void ArbolBinario<T>::insertar(T data)
 {
-	return _insertar(dato, raiz);
+	return _insertar(data, raiz);
 }
 
 template<class T>
-inline void ArbolBinario<T>::actualizar(T dato)
+inline void ArbolBinario<T>::removeElement(NodoArbol<T>* nodo)
 {
-	NodoArbol<T>* nodo = _buscar(dato->getId(), raiz);
-	if (nodo != nullptr) {
-		nodo->dato = dato;
-	}
-	else {
-		insertar(dato);
-	}
+	removeElement(nodo->data->getId());
 }
 
 template<class T>
-inline void ArbolBinario<T>::remover(T dato)
+inline void ArbolBinario<T>::removeElement(T data)
 {
-	remover(dato->getId());
+	removeElement(data->getId());
 }
 
 template<class T>
-inline void ArbolBinario<T>::remover(int id)
+inline void ArbolBinario<T>::removeElement(int id)
 {
 	NodoArbol<T>* nodo = buscarNodoPorId(id, raiz);
 	if (nodo != nullptr) {
@@ -204,14 +210,14 @@ inline void ArbolBinario<T>::remover(int id)
 		}
 		else if (nodo->izquierda == nullptr) {
 			NodoArbol<T>* aux = nodo->derecha;
-			nodo->dato = aux->dato;
+			nodo->data = aux->data;
 			nodo->derecha = aux->derecha;
 			nodo->izquierda = aux->izquierda;
 			delete aux;
 		}
 		else if (nodo->derecha == nullptr) {
 			NodoArbol<T>* aux = nodo->izquierda;
-			nodo->dato = aux->dato;
+			nodo->data = aux->data;
 			nodo->derecha = aux->derecha;
 			nodo->izquierda = aux->izquierda;
 			delete aux;
@@ -221,9 +227,27 @@ inline void ArbolBinario<T>::remover(int id)
 			while (aux->izquierda != nullptr) {
 				aux = aux->izquierda;
 			}
-			nodo->dato = aux->dato;
-			remover(aux->dato->getId());
+			nodo->data = aux->data;
+			remover(aux->data->getId());
 		}
+	}
+}
+
+template<class T>
+inline void ArbolBinario<T>::updateElement(T data)
+{
+	updateElement(data, data->getId());
+}
+
+template<class T>
+inline void ArbolBinario<T>::updateElement(T data, int id)
+{
+	NodoArbol<T>* nodo = search(id);
+	if (nodo != nullptr) {
+		nodo->data = data;
+	}
+	else {
+		insertar(data);
 	}
 }
 
@@ -246,15 +270,15 @@ void ArbolBinario<T>::PostOrden(function<void(T)> funcion)
 }
 
 template<class T>
-inline NodoArbol<T>* ArbolBinario<T>::buscar(int id)
+inline NodoArbol<T>* ArbolBinario<T>::search(int id)
 {
 	return _buscar(id, raiz);
 }
 
 template<class T>
-inline NodoArbol<T>* ArbolBinario<T>::buscar(T adato)
+inline NodoArbol<T>* ArbolBinario<T>::search(T adata)
 {
-	return _buscar(adato->getId(), raiz);
+	return _buscar(adata->getId(), raiz);
 }
 
 template <class T>
@@ -274,7 +298,7 @@ void ArbolBinario<T>::printTree(NodoArbol<T>* nodo, int espacio, C callback, str
 	else {
 		cout << (esIzquierda ? "|-I-" : "|-D-");
 	}
-	callback(nodo->dato);
+	callback(nodo->data);
 	cout << endl;
 
 	// Procesar el subárbol izquierdo y derecho
@@ -298,12 +322,12 @@ template <class T>
 void ArbolBinario<T>::escribir() {
 	ofstream file(nombreArchivo);
 	bool header = true;
-	function<void(T)> escribirNodo = [&](T dato) {
+	function<void(T)> escribirNodo = [&](T data) {
 		if (header) {
-			file << dato->escribirCabecera() << "\n";
+			file << data->escribirCabecera() << "\n";
 			header = false;
 		}
-		file << dato->escribirLinea() << "\n";
+		file << data->escribirLinea() << "\n";
 		};
 	EnOrden(escribirNodo);
 	file.close();
@@ -340,7 +364,7 @@ void ArbolBinario<T>::recargar() {
 		data->leerLinea(line);
 		NodoArbol<T>* nodo = _buscar(data->getId(), raiz);
 		if (nodo != nullptr) {
-			nodo->dato = data;
+			nodo->data = data;
 		}
 		else {
 			insertar(data);
@@ -413,9 +437,9 @@ template<typename C>
 inline ArbolBinario<T>* ArbolBinario<T>::searchMultipleByValue(C callback)
 {
 	ArbolBinario<T>* result = new ArbolBinario<T>();
-	function<void(T)> buscar = [&](T dato) {
-		if (callback(dato)) {
-			result->insertar(dato);
+	function<void(T)> buscar = [&](T data) {
+		if (callback(data)) {
+			result->insertar(data);
 		}
 		};
 	EnOrden(buscar);
@@ -427,8 +451,8 @@ template<typename C>
 inline void ArbolBinario<T>::ordenar(C callback)
 {
 	ArbolBinario<T>* result = new ArbolBinario<T>(callback, "");
-	EnOrden([&](T dato) {
-		result->insertar(dato);
+	EnOrden([&](T data) {
+		result->insertar(data);
 		});
 	this->raiz = result->raiz;
 	this->requisito_division = result->requisito_division;
