@@ -1,7 +1,7 @@
 id,nombre,direccion,ciudad,distrito,departamento,telefono,email,estado
-1,CentroLince,Calle las Amapolas,lima,Lince,Lima,99857463,nuevaSede@email.com,0
-3,Lince,Calle las Amapolas,lima,Lince,Lima,99857463,nuevaSede@email.com,0
-4,Chorrillos,Calle las Amapolas,lima,Lince,Lima,99857463,nuevaSede@email.com,0
-2,Sede,Calle las Amapolas,lima,Lince,Lima,99857463,nuevaSede@email.com,0
+1,CentroLince,Calle las Amapolas,Lima,Lince,Lima,99857463,nuevaSede@email.com,1
+3,Lince,Calle las Amapolas,lima,Lince,Lima,99857463,nuevaSede@email.com,1
+4,Chorrillos,Calle las Amapolas,Lima,Chorrillos,Lima,99857463,nuevaSede@email.com,1
+2,Sede,Calle las Amapolas,Lima,La Victoria,Lima,99857463,nuevaSede@email.com,1
 6,NuevoNombre,CalleImportante,3,4,5,6,email@gmail.com,1
-5,CentroDeLima,de,Lima,Lima,Lima,99933399,centrodelima@bcp.pe,0
+5,CentroDeLima,de,Lima,Lima,Lima,99933399,centrodelima@bcp.pe,1

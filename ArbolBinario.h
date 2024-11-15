@@ -81,7 +81,6 @@ void ArbolBinario<T>::_insertar(T data, NodoArbol<T>*& nodo)
 {
 	if (nodo != nullptr)
 	{
-		NodoArbol<T>* aux;
 		if (requisito_division(data, nodo->data))
 		{
 			return _insertar(data, nodo->izquierda);

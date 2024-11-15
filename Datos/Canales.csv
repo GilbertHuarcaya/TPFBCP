@@ -1,8 +1,8 @@
 id,idSede,nombre,tipoDeCanal,estado
-1,1,Cajero PRO,6,1
-2,0,Web,3,1
-3,0,APP,4,1
-4,0,YAPE,5,1
-5,1,Cajero Chorrilllos,6,1
+7,6,Cajero Lima,6,1
 6,5,Cajero Arequipa,6,1
-7,0,Cajero Lima,6,1
+5,1,Cajero Chorrilllos,6,1
+4,0,YAPE,5,1
+3,0,APP,4,1
+2,0,Web,3,1
+1,1,Cajero PRO,6,1
