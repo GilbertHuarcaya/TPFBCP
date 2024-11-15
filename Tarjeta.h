@@ -23,13 +23,18 @@ public:
 	string getNumero();
 	time_t getFechaVencimiento();
 	string getFechaVencimientoStr();
+	string getFechaVencimientoMMAA();
 	string getCvv();
 	void setCvv(string cvv);
 	
 	string generarNumero();
 	string generarCVV();
 	time_t calcularFechaVencimiento(int anios);
-	bool validarFechaVencimiento();
+	bool validarSiEstaVencida();
+	bool validarCVV(string cvv);
+	bool validarNumero(string numero);
+	bool validarFechaVencimiento(string vencimiento);
+	bool validarTarjeta(string numero, string venciminto, string cvv);
 
 	//FILE
 	string escribirLinea() override;
@@ -97,6 +102,13 @@ inline string Tarjeta::getFechaVencimientoStr()
 	return ss.str();
 }
 
+inline string Tarjeta::getFechaVencimientoMMAA()
+{
+	stringstream ss;
+	ss << put_time(localtime(&fechaVencimiento), "%m/%y");
+	return ss.str();
+}
+
 string Tarjeta::getCvv() {
 	return cvv;
 }
@@ -125,9 +137,25 @@ time_t Tarjeta::calcularFechaVencimiento(int anios = 5) {
 	return mktime(tm);
 }
 
-bool Tarjeta::validarFechaVencimiento() {
+bool Tarjeta::validarSiEstaVencida() {
 	time_t fechaActual = time(0);
-	return difftime(fechaVencimiento, fechaActual) > 0;
+	return difftime(fechaVencimiento, fechaActual) <= 0;
+}
+
+bool Tarjeta::validarCVV(string cvv) {
+	return this->cvv == cvv;
+}
+
+bool Tarjeta::validarNumero(string numero) {
+	return this->numero == numero;
+}
+
+bool Tarjeta::validarFechaVencimiento(string vencimiento) {
+	return getFechaVencimientoMMAA() == vencimiento;
+}
+
+bool Tarjeta::validarTarjeta(string numero, string vencimiento, string cvv) {
+	return validarNumero(numero) && validarCVV(cvv) && validarFechaVencimiento(vencimiento);
 }
 
 string Tarjeta::escribirLinea() {
