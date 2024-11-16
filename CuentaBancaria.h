@@ -283,7 +283,8 @@ inline Operacion* CuentaBancaria::crearDeposito(int id, string numeroCuentaBanca
 {
 	CuentaBancaria* cuentaBancaria = buscarCuentaPorNumero(numeroCuentaBancaria);
 	if (cuentaBancaria == nullptr) {
-		cout << "Cuenta no encontrada, intenta escribir sin espacios ni guiones entre los digitos." << endl;
+		cout << endl << "Cuenta no encontrada, intenta escribir sin espacios ni guiones entre los digitos." << endl;
+		system("pause");
 		return nullptr;
 	}
 
@@ -294,18 +295,21 @@ inline Operacion* CuentaBancaria::crearDeposito(int id, string numeroCuentaBanca
 Operacion* CuentaBancaria::crearTransferencia(int id, string numeroCuentaBancariaOrigen, string cuentaDestino, double monto, int idCanal, int idSede) {
 	CuentaBancaria* cuentaBancariaOrigen = buscarCuentaPorNumero(numeroCuentaBancariaOrigen);
 	if (cuentaBancariaOrigen == nullptr) {
-		cout << "Cuenta origen no encontrada, intenta escribir sin espacios ni guiones entre los digitos." << endl;
+		cout << endl << "Cuenta origen no encontrada, intenta escribir sin espacios ni guiones entre los digitos." << endl;
+		system("pause");
 		return nullptr;
 	}
 
 	CuentaBancaria* cuentaBancariaDestino = buscarCuentaPorNumero(cuentaDestino);
 	if (cuentaBancariaDestino == nullptr) {
-		cout << "Cuenta destino no encontrada, intenta escribir sin espacios ni guiones entre los digitos." << endl;
+		cout << endl << "Cuenta destino no encontrada, intenta escribir sin espacios ni guiones entre los digitos." << endl;
+		system("pause");
 		return nullptr;
 	}
 
 	if (monto > cuentaBancariaOrigen->getSaldo()) {
-		cout << "Saldo insuficiente" << endl;
+		cout << endl << "Saldo insuficiente" << endl;
+		system("pause");
 		return nullptr;
 	}
 
@@ -315,12 +319,14 @@ Operacion* CuentaBancaria::crearTransferencia(int id, string numeroCuentaBancari
 Operacion* CuentaBancaria::crearRetiro(int id, string numeroCuentaBancaria, double monto, int idCanal, int idSede) {
 	CuentaBancaria* cuentaBancaria = buscarCuentaPorNumero(numeroCuentaBancaria);
 	if (cuentaBancaria == nullptr) {
-		cout << "Cuenta no encontrada, intenta escribir sin espacios ni guiones entre los digitos." << endl;
+		cout << endl << "Cuenta no encontrada, intenta escribir sin espacios ni guiones entre los digitos." << endl;
+		system("pause");
 		return nullptr;
 	}
 
 	if (monto > cuentaBancaria->getSaldo()) {
-		cout << "Saldo insuficiente" << endl;
+		cout << endl << "Saldo insuficiente" << endl;
+		system("pause");
 		return nullptr;
 	}
 

@@ -22,13 +22,19 @@ public:
 	int getIdCuentaBancaria();
 	string getNumero();
 	time_t getFechaVencimiento();
+	string getFechaVencimientoStr();
+	string getFechaVencimientoMMAA();
 	string getCvv();
 	void setCvv(string cvv);
 	
 	string generarNumero();
 	string generarCVV();
 	time_t calcularFechaVencimiento(int anios);
-	bool validarFechaVencimiento();
+	bool validarSiEstaVencida();
+	bool validarCVV(string cvv);
+	bool validarNumero(string numero);
+	bool validarFechaVencimiento(string vencimiento);
+	bool validarTarjeta(string numero, string venciminto, string cvv);
 
 	//FILE
 	string escribirLinea() override;
@@ -89,6 +95,20 @@ time_t Tarjeta::getFechaVencimiento() {
 	return fechaVencimiento;
 }
 
+inline string Tarjeta::getFechaVencimientoStr()
+{
+	stringstream ss;
+	ss << put_time(localtime(&fechaVencimiento), "%Y-%m-%d");
+	return ss.str();
+}
+
+inline string Tarjeta::getFechaVencimientoMMAA()
+{
+	stringstream ss;
+	ss << put_time(localtime(&fechaVencimiento), "%m/%y");
+	return ss.str();
+}
+
 string Tarjeta::getCvv() {
 	return cvv;
 }
@@ -117,14 +137,30 @@ time_t Tarjeta::calcularFechaVencimiento(int anios = 5) {
 	return mktime(tm);
 }
 
-bool Tarjeta::validarFechaVencimiento() {
+bool Tarjeta::validarSiEstaVencida() {
 	time_t fechaActual = time(0);
-	return difftime(fechaVencimiento, fechaActual) > 0;
+	return difftime(fechaVencimiento, fechaActual) <= 0;
+}
+
+bool Tarjeta::validarCVV(string cvv) {
+	return this->cvv == cvv;
+}
+
+bool Tarjeta::validarNumero(string numero) {
+	return this->numero == numero;
+}
+
+bool Tarjeta::validarFechaVencimiento(string vencimiento) {
+	return getFechaVencimientoMMAA() == vencimiento;
+}
+
+bool Tarjeta::validarTarjeta(string numero, string vencimiento, string cvv) {
+	return validarNumero(numero) && validarCVV(cvv) && validarFechaVencimiento(vencimiento);
 }
 
 string Tarjeta::escribirLinea() {
 	stringstream ss;
-	ss << id << "," << idCliente << "," << idCuentaBancaria << "," << numero << "," << put_time(localtime(&fechaVencimiento), "%Y-%m-%d") << "," << cvv;
+	ss << id << "," << idCliente << "," << idCuentaBancaria << "," << numero << "," << fechaVencimiento << "," << cvv << "," << fechaCreacion << "," << fechaEdicion;
 	return ss.str();
 }
 
@@ -140,14 +176,18 @@ void Tarjeta::leerLinea(string csv) {
 		idCuentaBancaria = stoi(temp);
 		getline(ss, numero, ',');
 		getline(ss, temp, ',');
-		istringstream(temp) >> get_time(localtime(&fechaVencimiento), "%Y-%m-%d");
+		fechaVencimiento = stoll(temp);
 		getline(ss, cvv, ',');
+		getline(ss, temp, ',');
+		fechaCreacion = stoll(temp);
+		getline(ss, temp, ',');
+		fechaEdicion = stoll(temp);
 	}
 }
 
 inline string Tarjeta::escribirCabecera()
 {
-	return "id,idCliente,idCuentaBancaria,numero,fechaVencimiento,cvv";
+	return "id,idCliente,idCuentaBancaria,numero,fechaVencimiento,cvv,fechaCreacion,fechaEdicion";
 }
 
 void Tarjeta::print() {
@@ -157,5 +197,7 @@ void Tarjeta::print() {
 	cout << "Numero: " << numero << endl;
 	cout << "Fecha de Vencimiento: " << put_time(localtime(&fechaVencimiento), "%Y-%m-%d") << endl;
 	cout << "CVV: " << cvv << endl;
+	cout << "Fecha de Creacion: " << put_time(localtime(&fechaCreacion), "%Y-%m-%d %H:%M") << endl;
+	cout << "Fecha de Edicion: " << put_time(localtime(&fechaEdicion), "%Y-%m-%d %H:%M") << endl;
 	cout << endl;
 }
