@@ -81,6 +81,10 @@ public:
 	int getNextId();
 	int hash(KEY key);
 
+	//recorridos
+	template<typename C>
+	void recorridoEnOrden(C callback);
+
 	//ordenar
 	//merge sort
 	template <typename Compare>
@@ -629,6 +633,18 @@ template<typename T, typename KEY>
 inline int HashTablaLista<T, KEY>::hash(KEY key)
 {
 	return nextId + (key % size);
+}
+
+template<typename T, typename KEY>
+template<typename C>
+inline void HashTablaLista<T, KEY>::recorridoEnOrden(C callback)
+{
+	HashEntidadNodo<T>* temp = head;
+	while (temp != nullptr)
+	{
+		callback(temp->data);
+		temp = temp->next;
+	}
 }
 
 template<typename T, typename KEY>

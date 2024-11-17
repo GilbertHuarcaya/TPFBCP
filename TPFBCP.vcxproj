@@ -134,6 +134,9 @@
     <ClInclude Include="Cola.h" />
     <ClInclude Include="CuentaBancaria.h" />
     <ClInclude Include="Elemento.h" />
+    <ClInclude Include="GArista.h" />
+    <ClInclude Include="Grafo.h" />
+    <ClInclude Include="GVertice.h" />
     <ClInclude Include="HashEntidad.h" />
     <ClInclude Include="HashEntidadNodo.h" />
     <ClInclude Include="HashTabla.h" />

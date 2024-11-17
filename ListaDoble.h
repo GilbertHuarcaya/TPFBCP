@@ -59,6 +59,10 @@ public:
 	int getSize();
 	int getNextId();
 
+	//recorridos
+	template<typename C>
+	void recorridoEnOrden(C callback);
+
 	//Ordenamientos
 	template <typename Compare>
 	void mergeSort(Nodo<T>** headRef, Compare comp);
@@ -542,6 +546,18 @@ template <class T>
 int ListaDoble<T>::getNextId()
 {
 	return nextId;
+}
+
+template<class T>
+template<typename C>
+inline void ListaDoble<T>::recorridoEnOrden(C callback)
+{
+	Nodo<T>* temp = head;
+	while (temp != nullptr)
+	{
+		callback(temp->data);
+		temp = temp->next;
+	}
 }
 
 template <class T>

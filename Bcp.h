@@ -15,6 +15,7 @@
 #include "ArbolAVL.h"
 #include "iostream"
 #include "algorithm"
+#include "Grafo.h"
 #define SCREEN_WIDTH 120
 #define SCREEN_HEIGHT 70
 
@@ -185,6 +186,10 @@ public:
 	void MenuCuentas();
 
 	void MenuTarjetas();
+
+	//MENU GRAFO
+	void MenuGrafoCuentasBancariasYOperaciones();
+
 
 	//MENU DE ELECCION DE VALOR DE BUSQUEDA
 
@@ -2442,6 +2447,7 @@ void Bcp::MenuCuentas()
 		"Editar los datos de una Cuenta Bancaria",
 		"Buscar una Cuenta Bancaria por id",
 		"Eliminar una Cuenta Bancaria",
+		"Menu Grafo Cuentas Bancarias y Operaciones",
 		"Salir"
 	};
 
@@ -2654,6 +2660,9 @@ void Bcp::MenuCuentas()
 			break;
 		}
 		case 7:
+			MenuGrafoCuentasBancariasYOperaciones();
+			break;
+		case 8:
 			return false;
 			break;
 		}
@@ -2833,6 +2842,129 @@ void Bcp::MenuTarjetas()
 	};
 
 	crearMenu(opciones, callback);
+}
+
+inline void Bcp::MenuGrafoCuentasBancariasYOperaciones()
+{
+	auto validacionArco = [](CuentaBancaria*a, CuentaBancaria* b, Operacion* arista) {
+		return a->getId() == arista->getIdCuentaBancariaOrigen() && b->getId() == arista->getIdCuentaBancariaDestino();
+		};
+	Grafo<CuentaBancaria*, Operacion*>* grafo = new Grafo<CuentaBancaria*, Operacion*>(validacionArco);
+
+	cuentas->EnOrden([&](CuentaBancaria* data) {
+		grafo->insertar(data);
+		});
+
+	operaciones->recorridoEnOrden([&](Operacion* data) {
+		grafo->enlazarAutomatico(data);
+		});
+
+	vector<string> opciones = {
+		"Listar todas las Cuentas Bancarias",
+		"Listar todas las Operaciones",
+		"Listar todas las Operaciones de una Cuenta Bancaria",
+		"Ver Grafo de Cuentas Bancarias y Operaciones",
+		"Salir"
+	};
+
+	auto callback = [&](int seleccion) {
+		switch (seleccion)
+		{
+		case 0:
+			Console::Clear();
+			LogoBCP(18, 1);
+			gotoxy(0, 12);
+			cuentas->printTree(cuentas->getRaiz(), 1, [&](CuentaBancaria* data) {
+				cout << "ID: " << data->getId() << " - " << data->getNumeroCuenta() << " - " << data->getSaldo() << endl;
+				});
+			cout << "-----------------------------------------------------------------" << endl;
+			cuentas->EnOrden([&](CuentaBancaria* data) {
+				data->print();
+				cout << endl;
+				cout << "-----------------------------------------------------------------" << endl;
+				});
+			system("pause");
+			break;
+		case 1:
+			Console::Clear();
+			LogoBCP(18, 1);
+			gotoxy(0, 12);
+			operaciones->printPaginado(5);
+			break;
+		case 2:
+		{
+			Console::Clear();
+			LogoBCP(18, 1);
+			gotoxy(40, 12); cout << "Ingrese el id de la cuenta bancaria";
+			gotoxy(40, 13); int id; cin >> id;
+			CuentaBancaria* cuenta = buscar<ArbolAVL<CuentaBancaria*>*, CuentaBancaria>(id, cuentas);
+			if
+				(cuenta == nullptr)
+			{
+				printToast("No se encontro la cuenta bancaria", TERROR);
+				break;
+			}
+			Console::Clear();
+			LogoBCP(18, 1);
+			gotoxy(0, 12);
+			cuenta->print();
+			cout << "-----------------------------------------------------------------" << endl;
+			grafo->printAristasDeVertice(cuenta, [&](Operacion* op) {return "Transferencia: ID: " + to_string(op->getId()) + ", Monto: " + to_string(op->getMonto()); });
+			system("pause");
+			break;
+		}
+		case 3:
+		{
+			auto callbackGrafo = [&](int seleccion) {
+				switch (seleccion)
+				{
+				case 0:
+					Console::Clear();
+					LogoBCP(18, 1);
+					grafo->printVertices([&](CuentaBancaria* cuenta) {
+						return "Cuenta Bancaria: ID: " + to_string(cuenta->getId()) + ", Nro: " + cuenta->getNumeroCuenta();
+						});
+					system("pause");
+					break;
+				case 1:
+					Console::Clear();
+					LogoBCP(18, 1);
+					grafo->printAristas([&](Operacion* op) {return "Transferencia: ID: " + to_string(op->getId()) + ", Monto: " + to_string(op->getMonto()); });
+					system("pause");
+					break;
+				case 2:
+					Console::Clear();
+					LogoBCP(18, 1);
+					grafo->printGrafo([&](Operacion* op) {return "Transferencia: ID: " + to_string(op->getId()) + ", Monto: " + to_string(op->getMonto()); });
+					system("pause");
+					break;
+				case 3:
+					return false;
+					break;
+				}
+				return true;
+				};
+
+			vector<string> opcionesGrafo = {
+				"Listar Vertices",
+				"Listar Aristas",
+				"Listar Grafo",
+				"Salir"
+			};
+
+			crearMenu(opcionesGrafo, callbackGrafo);
+			break;
+		}
+		case 4:
+			return false;
+			break;
+		}
+		return true;
+		};
+
+	crearMenu(opciones, callback);
+
+	delete grafo;
 }
 
 inline HashTablaLista<Cliente*>* Bcp::MenuElegirBusquedaDeClientePorValorOPorId()
