@@ -8,8 +8,8 @@ template <typename T, typename Q>
 class GVertice
 {
 	T dato;
-	vector<GArista<Q>*>* aristas;
 public:
+	vector<GArista<Q>*>* aristas;
 	GVertice();
 	GVertice(T dato);
 	void setDato(T dato);
