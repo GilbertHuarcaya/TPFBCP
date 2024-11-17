@@ -2909,7 +2909,7 @@ inline void Bcp::MenuGrafoCuentasBancariasYOperaciones()
 			gotoxy(0, 12);
 			cuenta->print();
 			cout << "-----------------------------------------------------------------" << endl;
-			grafo->printAristasDeVertice(cuenta, [&](Operacion* op) {return to_string(op->getMonto()); });
+			grafo->printAristasDeVertice(cuenta, [&](Operacion* op) {return "Transferencia: ID: " + to_string(op->getId()) + ", Monto: " + to_string(op->getMonto()); });
 			system("pause");
 			break;
 		}
@@ -2921,19 +2921,21 @@ inline void Bcp::MenuGrafoCuentasBancariasYOperaciones()
 				case 0:
 					Console::Clear();
 					LogoBCP(18, 1);
-					grafo->printVertices([&](CuentaBancaria* cuenta) {return cuenta->getNumeroCuenta(); });
+					grafo->printVertices([&](CuentaBancaria* cuenta) {
+						return "Cuenta Bancaria: ID: " + to_string(cuenta->getId()) + ", Nro: " + cuenta->getNumeroCuenta();
+						});
 					system("pause");
 					break;
 				case 1:
 					Console::Clear();
 					LogoBCP(18, 1);
-					grafo->printAristas([&](Operacion* op) {return to_string(op->getMonto()); });
+					grafo->printAristas([&](Operacion* op) {return "Transferencia: ID: " + to_string(op->getId()) + ", Monto: " + to_string(op->getMonto()); });
 					system("pause");
 					break;
 				case 2:
 					Console::Clear();
 					LogoBCP(18, 1);
-					grafo->printGrafo([&](Operacion* op) {return to_string(op->getMonto()); });
+					grafo->printGrafo([&](Operacion* op) {return "Transferencia: ID: " + to_string(op->getId()) + ", Monto: " + to_string(op->getMonto()); });
 					system("pause");
 					break;
 				case 3:

@@ -351,11 +351,11 @@ inline void Grafo<T, Q>::printGrafo(C format)
 	for (int i = 0; i < vertices->size(); i++)
 	{
 		GVertice<T, Q>* vertice = vertices->at(i);
-		cout << "Vertice: " << vertice->getDato()->getId() << endl;
+		cout << "Vertice: ID: " << vertice->getDato()->getId() << endl;
 		for (int j = 0; j < vertice->aristas->size(); j++)
 		{
 
-			cout << "	->: " << format(vertice->getAristaPorPos(j)->getDato()) << " -> Vertice LLegada: " << vertices->at(vertice->aristas->at(j)->getPosLlegada())->getDato()->getId()  << endl;
+			cout << "	-> " << format(vertice->getAristaPorPos(j)->getDato()) << " -> Vertice LLegada: ID: " << vertices->at(vertice->aristas->at(j)->getPosLlegada())->getDato()->getId()  << endl;
 		}
 	}
 }
@@ -367,7 +367,7 @@ inline void Grafo<T, Q>::printVertices(C format)
 	cout << endl << "Vertices: " << endl;
 	for (int i = 0; i < vertices->size(); i++)
 	{
-		cout << "Vertice: " << format(vertices->at(i)->getDato()) << endl;
+		cout << format(vertices->at(i)->getDato()) << endl;
 	}
 }
 
@@ -383,7 +383,7 @@ inline void Grafo<T, Q>::printAristas(C format)
 
 		for (int j = 0; j < vertice->aristas->size(); j++)
 		{
-			cout << " ->: " << format(vertice->getAristaPorPos(j)->getDato()) << endl;
+			cout << format(vertice->getAristaPorPos(j)->getDato()) << endl;
 		}
 	}
 }
@@ -395,10 +395,10 @@ inline void Grafo<T, Q>::printAristasDeVertice(int pos, C format)
 	cout << endl << endl;
 	if (pos < 0 || pos >= vertices->size())return;
 	GVertice<T, Q>* vertice = vertices->at(pos);
-	cout << "Vertice: " << vertice->getDato()->getId() << endl;
+	cout << "Vertice: ID: " << vertice->getDato()->getId() << endl;
 	for (int j = 0; j < vertice->aristas->size(); j++)
 	{
-		cout << "	->: " << format(vertice->getAristaPorPos(j)->getDato()) << " -> Vertice LLegada: " << vertices->at(vertice->aristas->at(j)->getPosLlegada())->getDato()->getId()  << endl;
+		cout << "	-> " << format(vertice->getAristaPorPos(j)->getDato()) << " -> Vertice LLegada: ID: " << vertices->at(vertice->aristas->at(j)->getPosLlegada())->getDato()->getId()  << endl;
 
 	}
 }
@@ -411,10 +411,10 @@ inline void Grafo<T, Q>::printAristasDeVertice(T dato, C format)
 	int pos = getPosDato(dato);
 	if (pos == -1)return;
 	GVertice<T, Q>* vertice = vertices->at(pos);
-	cout << "Vertice: " << vertice->getDato()->getId() << endl;
+	cout << "Vertice: ID: " << vertice->getDato()->getId() << endl;
 	for (int j = 0; j < vertice->aristas->size(); j++)
 	{
-		cout << "	->: " << format(vertice->getAristaPorPos(j)->getDato()) << " -> Vertice LLegada: " << vertices->at(vertice->aristas->at(j)->getPosLlegada())->getDato()->getId() << endl;
+		cout << "	-> " << format(vertice->getAristaPorPos(j)->getDato()) << " -> Vertice LLegada: ID: " << vertices->at(vertice->aristas->at(j)->getPosLlegada())->getDato()->getId() << endl;
 
 	}
 }
